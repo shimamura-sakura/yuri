@@ -1,6 +1,7 @@
 from __future__ import annotations
 from io import BytesIO
 from struct import Struct
+from common import VerRange
 from collections.abc import Buffer
 from murmurhash2 import murmurhash2 as _mmh2
 from typing import cast, BinaryIO, Callable, Sequence, TextIO
@@ -28,7 +29,6 @@ def make_swap(*args: tuple[int, int]):
 
 YpfMagic = b'YPF\0'
 YpfPad16 = b'\0'*16
-VerRange = range(200, 501)
 SYpfHead = Struct('<4s3I16s')
 TYpfHead = tuple[bytes, int, int, int, bytes]
 SEntName = Struct('<IB')
@@ -80,7 +80,7 @@ def read(f: BinaryIO, *, v: int | None = None, enc: str = 'cp932',
     mag, v_, n, l, pad = cast(TYpfHead, SYpfHead.unpack(f.read(32)))
     assert mag == YpfMagic, f'not YPF magic: {mag}'
     assert pad == YpfPad16, f'nonzero in padding: {pad}'
-    assert (v := v or v_) in VerRange, f'unknown version: {v}'
+    assert (v := v or v_) in VerRange, f'unsupported version: {v}'
     assert (l := l-32 if v >= 300 else l) >= 0, f'wrong version ?'
     assert (g := len(d := f.read(l))) == l, f'ents: want {l}, got {g}'
     nl_map, nb_xor, h_name, h_file, f_ent, _ = ver_consts(v, nl_map, nb_xor, h_name, h_file)

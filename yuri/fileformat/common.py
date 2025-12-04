@@ -1,7 +1,11 @@
-from struct import Struct
+from enum import IntEnum
+from struct import Struct as St
+from dataclasses import dataclass
+from typing import cast, BinaryIO
+VerRange = range(200, 501)
 LE = 'little'
 CP932 = 'cp932'
-F64 = Struct('<d')
+F64 = St('<d')
 
 
 class Rdr:
@@ -10,6 +14,10 @@ class Rdr:
     enc: str
     b: bytes
     v: memoryview
+
+    @classmethod
+    def from_bio(cls, bio: BinaryIO, enc: str = CP932):
+        return cls(bio.read(), enc)
 
     def __init__(self, data: bytes, enc: str = CP932):
         self.idx = 0
@@ -48,7 +56,7 @@ class Rdr:
     def str(self, n: int, *, enc: str | None = None):
         return str(self.read(n), enc or self.enc)
 
-    def unpack(self, t: Struct):
+    def unpack(self, t: St):
         return t.unpack(self.read(t.size))
 
     def f64(self) -> float:
@@ -58,3 +66,13 @@ class Rdr:
         i = self.idx
         l = len(self.v)
         assert i == l, f'incomplete read, idx={i}, len={l}, ver={ver}'
+
+
+NErrStr = 37  # for YSCM and YSCD
+
+
+class YTyp(IntEnum):
+    ANY = 0
+    INT = 1
+    FLT = 2
+    STR = 3
