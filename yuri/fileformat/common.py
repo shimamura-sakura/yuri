@@ -1,7 +1,8 @@
+from sys import stdout
 from enum import IntEnum
 from struct import Struct as St
 from dataclasses import dataclass
-from typing import cast, BinaryIO
+from typing import cast, BinaryIO as BinIO, TextIO, Sequence as Seq, Callable
 VerRange = range(200, 501)
 LE = 'little'
 CP932 = 'cp932'
@@ -16,7 +17,7 @@ class Rdr:
     v: memoryview
 
     @classmethod
-    def from_bio(cls, bio: BinaryIO, enc: str = CP932):
+    def from_bio(cls, bio: BinIO, enc: str = CP932):
         return cls(bio.read(), enc)
 
     def __init__(self, data: bytes, enc: str = CP932):

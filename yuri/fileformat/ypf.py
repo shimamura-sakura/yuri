@@ -1,10 +1,9 @@
 from __future__ import annotations
+from .common import *
 from io import BytesIO
 from struct import Struct
 from collections.abc import Buffer
 from murmurhash2 import murmurhash2 as _mmh2
-from typing import cast, BinaryIO, Callable, Sequence, TextIO
-from .common import VerRange
 Ent = tuple[str, int, int, bytes, int]  # name, k, c, data, l
 try:
     import deflate
@@ -47,34 +46,39 @@ def no_nash(d: bytes, e: int): return None
 def hashA32(d: bytes, e: int): return h if (h := adler32(d)) != e else None
 def hashCRC(d: bytes, e: int): return h if (h := crc32(d, 0)) != e else None
 def hashMMH(d: bytes, e: int): return h if (h := _mmh2(d, 0)) != e else None
-def entname(f: BinaryIO) -> TEntName: return SEntName.unpack(f.read(5))
-def ent_32b(f: BinaryIO) -> TEnt: return SEnt_32B.unpack(f.read(18))
-def ent_64b(f: BinaryIO) -> TEnt: return SEnt_64B.unpack(f.read(22))
+def entname(f: BinIO) -> TEntName: return SEntName.unpack(f.read(5))
+def ent_32b(f: BinIO) -> TEnt: return SEnt_32B.unpack(f.read(18))
+def ent_64b(f: BinIO) -> TEnt: return SEnt_64B.unpack(f.read(22))
+
+
+def ver_hash(v: int, h: THashFn | None = None):
+    if v >= 470:
+        h = h or hashMMH
+    elif v >= 265:
+        h = h or hashCRC
+    else:
+        h = h or hashA32
+    return h
 
 
 def ver_consts(v: int,
                nl_map: bytes | None = None, nb_xor: bytes | None = None,
                h_name: THashFn | None = None, h_file: THashFn | None = None):
+    h_name = ver_hash(v, h_name)
     if v >= 470:
         f_ent = ent_64b
         s_ent = SEnt_64B
-        h_name = h_name or hashMMH
         h_file = h_file or hashMMH
     else:
         f_ent = ent_32b
         s_ent = SEnt_32B
-        if v >= 265:
-            h_name = h_name or hashCRC
-            h_file = h_file or hashA32
-        else:
-            h_name = h_name or hashA32
-            h_file = h_file or hashA32
+        h_file = h_file or hashA32
     nl_map = nl_map or (NLMapV500 if v == 500 else NLMapV000)
     nb_xor = nb_xor or (NBXorV500 if v == 500 else NBXorV290 if v == 290 else NBXorV000)
     return nl_map, nb_xor, h_name, h_file, f_ent, s_ent
 
 
-def read(f: BinaryIO, *, v: int | None = None, enc: str = 'cp932',
+def read(f: BinIO, *, v: int | None = None, enc: str = 'cp932',
          nl_map: bytes | None = None, nb_xor: bytes | None = None,
          h_name: THashFn | None = None, h_file: THashFn | None = None, log: TextIO | None = None):
     mag, v_, n, l, pad = cast(TYpfHead, SYpfHead.unpack(f.read(32)))
@@ -102,7 +106,7 @@ def read(f: BinaryIO, *, v: int | None = None, enc: str = 'cp932',
     return ents, v
 
 
-def make(ents: Sequence[Ent], v: int, f: BinaryIO, *, enc: str = 'cp932',
+def make(ents: Seq[Ent], v: int, f: BinIO, *, enc: str = 'cp932',
          nl_map: bytes | None = None, nb_xor: bytes | None = None,
          h_name: THashFn | None = None, h_file: THashFn | None = None,
          comp: Callable[[Buffer], bytes] = compress, force_comp: bool = False, log: TextIO | None = None):
