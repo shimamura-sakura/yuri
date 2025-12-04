@@ -1,10 +1,10 @@
 from __future__ import annotations
 from io import BytesIO
 from struct import Struct
-from common import VerRange
 from collections.abc import Buffer
 from murmurhash2 import murmurhash2 as _mmh2
 from typing import cast, BinaryIO, Callable, Sequence, TextIO
+from .common import VerRange
 Ent = tuple[str, int, int, bytes, int]  # name, k, c, data, l
 try:
     import deflate
