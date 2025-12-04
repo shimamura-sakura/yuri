@@ -111,6 +111,7 @@ def make(ents: Seq[Ent], v: int, f: BinIO, *, enc: str = 'cp932',
          h_name: THashFn | None = None, h_file: THashFn | None = None,
          comp: Callable[[Buffer], bytes] = compress, force_comp: bool = False, log: TextIO | None = None):
     '''Ent[k=-1]: pass in already compressed data'''
+    assert v in VerRange, f'unsupported version: {v}'
     off = 32  # name, k, c, data, ul, data_hash
     fents: list[tuple[bytes, int, int, bytes, int, int]] = []
     nl_map, nb_xor, h_name, h_file, _, s_ent = ver_consts(v, nl_map, nb_xor, h_name, h_file)

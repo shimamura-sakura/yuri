@@ -51,6 +51,7 @@ class YSLB:
 
     @staticmethod
     def create(f: BinIO, v: int, lbls: Seq[Lbl], enc: str = CP932, *, h: THashFn | None = None):
+        assert v in VerRange, f'unsupported version: {v}'
         h = ver_hash(v, h)
         ls = [(nb := bytes(l.name, enc), h(nb, 0) or 0, l) for l in lbls]
         ls.sort(key=lambda t: t[1])
