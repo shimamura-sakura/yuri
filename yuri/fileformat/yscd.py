@@ -77,3 +77,11 @@ class YSCD:
         b800 = r.read(0x800)
         r.assert_eof(v)
         return cls(v, cmds, vars, errs, estr, blks, b800)
+
+    def print(self, f: TextIO = stdout):
+        f.write(f'YSCD ver={self.ver} ncmd={len(self.cmds)} nvar={len(self.vars)}\n')
+        f.write('-- CMDS --\n')
+        for i, c in enumerate(self.cmds):
+            f.write(f'[{i:>3}] Cmd {repr(c.name)}\n')
+            f.writelines(f'[{i:>3}][{j:>2}] Arg {repr(a.name)} {a.unk1} {a.unk2} {a.typ} {a.unk}\n'
+                         for j, a in enumerate(c.args))
