@@ -1,8 +1,8 @@
 from .common import *
-from .expr import *
+from .expr import Typ, TIns, many_ins, ins_tob
 VInit = tuple[Lit[Typ.INT], int]\
     | tuple[Lit[Typ.FLT], float]\
-    | tuple[Lit[Typ.STR], bytes]
+    | tuple[Lit[Typ.STR], list[TIns]]
 SVarV000 = St('<B HHBB')
 SVarV481 = St('<BBHHBB')
 YsvMagic = b'YSVR'
@@ -37,7 +37,9 @@ class Var:
             case Typ.UNK: init = None
             case Typ.INT: init = (typ, r.si(8))
             case Typ.FLT: init = (typ, r.f64())
-            case Typ.STR: init = (typ, r.read(r.ui(2)).tobytes())  # TODO: parse expr
+            case Typ.STR:
+                buf = r.read(r.ui(2)).tobytes()
+                init = (typ, many_ins(Rdr(buf, r.enc)))
         return dims, init
 
     def writeV000(self, f: BinIO, enc: str):
@@ -57,8 +59,9 @@ class Var:
             case (Typ.INT, i): f.write(i.to_bytes(8, LE, signed=True))
             case (Typ.FLT, v): f.write(F64.pack(v))
             case (Typ.STR, v):
-                f.write(len(v).to_bytes(2, LE))
-                f.write(v)  # TODO: assemble
+                bs = list(ins_tob(i, enc) for i in v)
+                f.write(sum(map(len, bs)).to_bytes(2, LE))
+                f.writelines(bs)
 
 
 @dataclass(slots=True)

@@ -42,7 +42,7 @@ NLMapV500 = make_swap((3, 10), (17, 24), (20, 46), *NLSwaps)
 NBXorV000 = bytes(i ^ 0xff for i in range(256))
 NBXorV290 = bytes(c ^ 0x40 for c in NBXorV000)
 NBXorV500 = bytes(c ^ 0x36 for c in NBXorV000)
-def no_nash(d: bytes, e: int): return None
+def no_hash(d: bytes, e: int): return None
 def hashA32(d: bytes, e: int): return h if (h := adler32(d)) != e else None
 def hashCRC(d: bytes, e: int): return h if (h := crc32(d, 0)) != e else None
 def hashMMH(d: bytes, e: int): return h if (h := _mmh2(d, 0)) != e else None
