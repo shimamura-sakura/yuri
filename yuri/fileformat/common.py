@@ -14,6 +14,7 @@ Ints = tuple[int, ...]
 
 
 class VScope(IntEnum):
+    L = -1
     G = 1
     S = 2
     F = 3
