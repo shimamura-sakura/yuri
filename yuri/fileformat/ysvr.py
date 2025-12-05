@@ -1,7 +1,8 @@
 from .common import *
-VInit = tuple[Lit[YTyp.INT], int]\
-    | tuple[Lit[YTyp.FLT], float]\
-    | tuple[Lit[YTyp.STR], bytes]
+from .expr import *
+VInit = tuple[Lit[Typ.INT], int]\
+    | tuple[Lit[Typ.FLT], float]\
+    | tuple[Lit[Typ.STR], bytes]
 SVarV000 = St('<B HHBB')
 SVarV481 = St('<BBHHBB')
 YsvMagic = b'YSVR'
@@ -32,11 +33,11 @@ class Var:
     @classmethod
     def _dims_init(cls, r: Rdr, typ: int, ndim: int):
         dims = [r.ui(4) for _ in range(ndim)]
-        match (typ := YTyp(typ)):
-            case YTyp.UNK: init = None
-            case YTyp.INT: init = (typ, r.si(8))
-            case YTyp.FLT: init = (typ, r.f64())
-            case YTyp.STR: init = (typ, r.read(r.ui(2)).tobytes())  # TODO: parse expr
+        match (typ := Typ(typ)):
+            case Typ.UNK: init = None
+            case Typ.INT: init = (typ, r.si(8))
+            case Typ.FLT: init = (typ, r.f64())
+            case Typ.STR: init = (typ, r.read(r.ui(2)).tobytes())  # TODO: parse expr
         return dims, init
 
     def writeV000(self, f: BinIO, enc: str):
@@ -53,9 +54,9 @@ class Var:
         f.writelines(d.to_bytes(4, LE) for d in self.dims)
         match self.init:
             case None: pass
-            case (YTyp.INT, i): f.write(i.to_bytes(8, LE, signed=True))
-            case (YTyp.FLT, v): f.write(F64.pack(v))
-            case (YTyp.STR, v):
+            case (Typ.INT, i): f.write(i.to_bytes(8, LE, signed=True))
+            case (Typ.FLT, v): f.write(F64.pack(v))
+            case (Typ.STR, v):
                 f.write(len(v).to_bytes(2, LE))
                 f.write(v)  # TODO: assemble
 

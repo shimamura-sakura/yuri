@@ -1,4 +1,5 @@
 from .common import *
+from .expr import *
 YscMagic = b'YSCM'
 SYscHead = St('<4sIII')
 TYscHead = tuple[bytes, int, int, int]
@@ -7,14 +8,14 @@ TYscHead = tuple[bytes, int, int, int]
 @dataclass(slots=True)
 class MArg:
     name: str
-    typ: YTyp
+    typ: Typ
     unk: int
 
     @classmethod
     def read(cls, r: Rdr):
         name = r.sz()
         typ, unk = r.read(2)
-        return cls(name, YTyp(typ), unk)
+        return cls(name, Typ(typ), unk)
 
 
 @dataclass(slots=True)

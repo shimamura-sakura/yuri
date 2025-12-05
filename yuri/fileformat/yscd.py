@@ -1,5 +1,6 @@
 from .common import *
 from .yser import Err
+from .expr import *
 YcdMagic = b'YSCD'
 Tu32x2 = St('<2I')
 SYcdHead = St('<4sIII')
@@ -11,14 +12,14 @@ class DArg:
     name: str
     unk1: int
     unk2: int
-    typ: YTyp
+    typ: Typ
     unk: int
 
     @classmethod
     def read(cls, r: Rdr):
         name = r.sz()
         unk1, unk2, typ, unk = r.read(4)
-        return cls(name, unk1, unk2, YTyp(typ), unk)
+        return cls(name, unk1, unk2, Typ(typ), unk)
 
 
 @dataclass(slots=True)
@@ -36,14 +37,14 @@ class DCmd:
 @dataclass(slots=True)
 class DVar:
     name: str
-    typ: YTyp
+    typ: Typ
     dims: list[int]
 
     @classmethod
     def read(cls, r: Rdr):
         name = r.sz()
         typ, ndim = r.read(2)
-        return cls(name, YTyp(typ), [r.ui(4) for _ in range(ndim)])
+        return cls(name, Typ(typ), [r.ui(4) for _ in range(ndim)])
 
 
 @dataclass(slots=True)
