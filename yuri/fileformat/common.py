@@ -83,7 +83,7 @@ class Rdr:
     def assert_eof(self, ver: int):
         i = self.idx
         l = len(self.v)
-        assert i == l, f'incomplete read, idx={i}, len={l}, ver={ver}'
+        assert i == l, f'not entirely consumed, idx={i}, len={l}, ver={ver}'
 
 
 class CmdCodes(Prot):
