@@ -2,8 +2,8 @@ from sys import stdout
 from enum import IntEnum
 from struct import Struct as St
 from dataclasses import dataclass
-from typing import cast, BinaryIO as BinIO, TextIO
 from typing import Literal as Lit, Sequence as Seq, Callable
+from typing import cast, BinaryIO as BinIO, TextIO, Protocol as Prot
 VerRange = range(200, 501)
 NErrStr = 37  # for YSCM and YSCD
 VMinUsr = 1000
@@ -84,3 +84,7 @@ class Rdr:
         i = self.idx
         l = len(self.v)
         assert i == l, f'incomplete read, idx={i}, len={l}, ver={ver}'
+
+
+class CmdCodes(Prot):
+    def __getattr__(self, k: str) -> int: ...

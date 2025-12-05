@@ -1,5 +1,5 @@
-from .common import *
 from .expr import *
+from .common import *
 YscMagic = b'YSCM'
 SYscHead = St('<4sIII')
 TYscHead = tuple[bytes, int, int, int]
@@ -30,12 +30,17 @@ class MCmd:
         return cls(name, [MArg.read(r) for _ in range(narg)])
 
 
+class dummy:
+    def __getattr__(self, k: str) -> int: raise AttributeError(name=k)
+
+
 @dataclass(slots=True)
 class YSCM:
     ver: int
     cmds: list[MCmd]
     errs: list[str]
     b256: memoryview
+    cmdcodes: CmdCodes
 
     @classmethod
     def read(cls, r: Rdr, *, v: int | None = None):
@@ -47,7 +52,10 @@ class YSCM:
         errs = [r.sz() for _ in range(NErrStr)]
         b256 = r.read(256)
         r.assert_eof(v)
-        return cls(v, cmds, errs, b256)
+        cmdcodes = dummy()
+        for i, c in enumerate(cmds):
+            setattr(cmdcodes, c.name, i)
+        return cls(v, cmds, errs, b256, cmdcodes)
 
     def print(self, f: TextIO = stdout):
         f.write(f'YSCM ver={self.ver} ncmd={len(self.cmds)}\n')
