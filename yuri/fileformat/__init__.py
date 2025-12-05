@@ -6,3 +6,4 @@ from .yser import YSER, Err
 from .yslb import YSLB, Lbl
 from .ystd import YSTD
 from .ystl import YSTL, Scr
+from .ysvr import YSVR, Var

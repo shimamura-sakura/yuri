@@ -6,7 +6,6 @@ SScrHead = St('<II')
 SScrV200 = St('<Q2i')
 SScrV470 = St('<Q3i')
 TScrHead = tuple[int, int]
-TScrBody = tuple[int, ...]
 
 
 @dataclass(slots=True)

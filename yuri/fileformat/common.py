@@ -2,11 +2,13 @@ from sys import stdout
 from enum import IntEnum
 from struct import Struct as St
 from dataclasses import dataclass
-from typing import cast, BinaryIO as BinIO, TextIO, Sequence as Seq, Callable
+from typing import cast, BinaryIO as BinIO, TextIO
+from typing import Literal as Lit, Sequence as Seq, Callable
 VerRange = range(200, 501)
 LE = 'little'
 CP932 = 'cp932'
 F64 = St('<d')
+Ints = tuple[int, ...]
 
 
 class Rdr:
@@ -70,10 +72,24 @@ class Rdr:
 
 
 NErrStr = 37  # for YSCM and YSCD
+VMinUsr = 1000
 
 
 class YTyp(IntEnum):
-    ANY = 0
+    UNK = 0
     INT = 1
     FLT = 2
     STR = 3
+
+
+class VScope(IntEnum):
+    G = 1
+    S = 2
+    F = 3
+
+
+class VScoEx(IntEnum):
+    SYS = 0
+    DEF = 1
+    G2 = 2
+    G3 = 3
