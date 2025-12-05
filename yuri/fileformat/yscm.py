@@ -47,3 +47,10 @@ class YSCM:
         b256 = r.read(256)
         r.assert_eof(v)
         return cls(v, cmds, errs, b256)
+
+    def print(self, f: TextIO = stdout):
+        f.write(f'YSCM ver={self.ver} ncmd={len(self.cmds)}\n')
+        for i, c in enumerate(self.cmds):
+            f.write(f'[{i:>3}] Cmd {repr(c.name)}\n')
+            f.writelines(f'[{i:>3}][{j:>2}] Arg {repr(a.name)} {a.typ} {a.unk}\n'
+                         for j, a in enumerate(c.args))

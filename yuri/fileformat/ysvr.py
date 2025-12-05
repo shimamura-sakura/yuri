@@ -81,3 +81,7 @@ class YSVR:
         fun = Var.writeV481 if v >= 481 else Var.writeV000
         for var in self.vars:
             fun(var, f, enc)
+
+    def print(self, f: TextIO = stdout):
+        f.write(f'YSVR ver={self.ver} nvar={len(self.vars)}\n')
+        f.writelines(f'[{i:>3}] {repr(v)}\n' for i, v in enumerate(self.vars))
