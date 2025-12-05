@@ -85,3 +85,5 @@ class YSCD:
             f.write(f'[{i:>3}] Cmd {repr(c.name)}\n')
             f.writelines(f'[{i:>3}][{j:>2}] Arg {repr(a.name)} {a.unk1} {a.unk2} {a.typ} {a.unk}\n'
                          for j, a in enumerate(c.args))
+        f.write('-- VARS --\n')
+        f.writelines(f'[{i:>3}] {repr(v)}\n' for i, v in enumerate(self.vars))
