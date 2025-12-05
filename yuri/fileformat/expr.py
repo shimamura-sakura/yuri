@@ -11,10 +11,10 @@ class Typ(IntEnum):
 
 
 class Tyq(IntEnum):
-    K23 = 0x23
+    X23 = 0x23
     STR = 0x24
     NUM = 0x40
-    K60 = 0x60
+    X60 = 0x60
 
 
 class IOpA(IntEnum):
