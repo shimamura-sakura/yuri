@@ -10,7 +10,7 @@ class Ctl(IntEnum):
     LOOP = 3
 
 
-TyqPrefToSuf = {'$': 'S', '@': 'N', '&@': 'NA', '&$': 'SA', '$@': 'NS'}
+TyqPrefToSuf = {'$': 'S', '@': 'N', '&@': 'AN', '&$': 'AS', '$@': 'SN'}
 AstListLbl: list[ast.expr] = [ast.Name('LBL')]
 AstListUnderline = ast.Name('_')
 CtlIfElif = (Ctl.IF, Ctl.ELIF)

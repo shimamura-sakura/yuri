@@ -9,7 +9,7 @@ from ..fileformat.expr import *
 StrNoInit = []
 IntNoInit = [(IOpA.I64, 0)]
 SExCh = ['', '', '2', '3']
-ScoCh = ['x', 'g', 's', 'f', '']
+ScoCh = [cast(str, None), 'g', 's', 'f', 'l']
 RGoodName = re.compile('^[A-Z0-9_]+')
 DefLclCmd: dict[str, tuple[VScope, VScoEx, Typ]] = {
     'INT': (VScope.L, VScoEx.DEF, Typ.Int),

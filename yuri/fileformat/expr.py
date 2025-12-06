@@ -101,3 +101,13 @@ class Ins:
     to_b = staticmethod(ins_tob)
     read = staticmethod(read_ins)
     read_many = staticmethod(many_ins)
+
+    @staticmethod
+    def intv(i: int):
+        if -0x80 <= i <= 0x7F:
+            return (IOpA.I8, i)
+        if -0x8000 <= i <= 0x7FFF:
+            return (IOpA.I16, i)
+        if -0x80000000 <= i <= 0x7FFFFFFF:
+            return (IOpA.I32, i)
+        return (IOpA.I64, i)
