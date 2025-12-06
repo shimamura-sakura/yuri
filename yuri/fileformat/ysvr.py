@@ -28,6 +28,7 @@ class Var:
     @classmethod
     def readV481(cls, r: Rdr):
         sc, scex, iscr, ivar, typ, ndim = cast(Ints, r.unpack(SVarV481))
+        assert ivar >= VMinUsr or scex == VScoEx.SYS
         return cls(VScope(sc), VScoEx(scex), iscr, ivar, *cls._dims_init(r, typ, ndim))
 
     @classmethod
