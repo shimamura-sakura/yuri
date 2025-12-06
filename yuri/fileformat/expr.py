@@ -4,10 +4,10 @@ from collections.abc import Buffer, Sized
 
 
 class Typ(IntEnum):
-    UNK = 0
-    INT = 1
-    FLT = 2
-    STR = 3
+    Unk = 0
+    Int = 1
+    Flt = 2
+    Str = 3
 
 
 class Tyq(IntEnum):

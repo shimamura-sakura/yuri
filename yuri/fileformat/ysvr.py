@@ -1,8 +1,8 @@
 from .common import *
 from .expr import Typ, TIns, many_ins, ins_tob
-VInit = tuple[Lit[Typ.INT], int]\
-    | tuple[Lit[Typ.FLT], float]\
-    | tuple[Lit[Typ.STR], list[TIns]]
+VInit = tuple[Lit[Typ.Int], int]\
+    | tuple[Lit[Typ.Flt], float]\
+    | tuple[Lit[Typ.Str], list[TIns]]
 SVarV000 = St('<B HHBB')
 SVarV481 = St('<BBHHBB')
 YsvMagic = b'YSVR'
@@ -34,10 +34,10 @@ class Var:
     def _dims_init(cls, r: Rdr, typ: int, ndim: int):
         dims = [r.ui(4) for _ in range(ndim)]
         match (typ := Typ(typ)):
-            case Typ.UNK: init = None
-            case Typ.INT: init = (typ, r.si(8))
-            case Typ.FLT: init = (typ, r.f64())
-            case Typ.STR:
+            case Typ.Unk: init = None
+            case Typ.Int: init = (typ, r.si(8))
+            case Typ.Flt: init = (typ, r.f64())
+            case Typ.Str:
                 buf = r.read(r.ui(2)).tobytes()
                 init = (typ, many_ins(Rdr(buf, r.enc)))
         return dims, init
@@ -56,9 +56,9 @@ class Var:
         f.writelines(d.to_bytes(4, LE) for d in self.dims)
         match self.init:
             case None: pass
-            case (Typ.INT, i): f.write(i.to_bytes(8, LE, signed=True))
-            case (Typ.FLT, v): f.write(F64.pack(v))
-            case (Typ.STR, v):
+            case (Typ.Int, i): f.write(i.to_bytes(8, LE, signed=True))
+            case (Typ.Flt, v): f.write(F64.pack(v))
+            case (Typ.Str, v):
                 bs = list(ins_tob(i, enc) for i in v)
                 f.write(sum(map(len, bs)).to_bytes(2, LE))
                 f.writelines(bs)
