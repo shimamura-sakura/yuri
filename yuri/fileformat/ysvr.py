@@ -2,7 +2,7 @@ from .common import *
 from .expr import Typ, TIns, many_ins, ins_tob
 VInit = tuple[Lit[Typ.Int], int]\
     | tuple[Lit[Typ.Flt], float]\
-    | tuple[Lit[Typ.Str], list[TIns]]
+    | tuple[Lit[Typ.Str], Seq[TIns]]
 SVarV000 = St('<B HHBB')
 SVarV481 = St('<BBHHBB')
 YsvMagic = b'YSVR'

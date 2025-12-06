@@ -10,9 +10,11 @@ KEY_200 = 0x07B4024A
 KEY_290 = 0xD36FAC96
 YstbMagic = b'YSTB'
 SYstbHead = St('<4s7I')
+AOpChar: list[str] = ['=', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=']
 
 
 class AOp(IntEnum):
+    def __str__(self): return AOpChar[self]
     EQL = 0
     ADD = 1
     SUB = 2

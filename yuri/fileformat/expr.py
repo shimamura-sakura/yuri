@@ -11,7 +11,7 @@ class Typ(IntEnum):
 
 
 class Tyq(IntEnum):
-    X23 = 0x23
+    X23 = 0x23  # ToS in V200
     STR = 0x24
     NUM = 0x40
     X60 = 0x60
@@ -37,7 +37,7 @@ class IOpB(IntEnum):
     NOP = 0x2C
     TOI = 0x73
     TOS = 0x69
-    INV = 0x52
+    NEG = 0x52
     MUL = 0x2A
     DIV = 0x2F
     MOD = 0x25
