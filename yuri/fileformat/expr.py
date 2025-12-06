@@ -71,7 +71,7 @@ def read_ins(r: Rdr) -> TIns:
         return (IOpV(tri), Tyq(tyq), idx)
     match divmod(tri, 0x100):
         case (l, IOpA.STR): return r.str(l)
-        case (8, IOpA.F64): return (IOpA.F64, r.f64())
+        case (8, 0x46): return (IOpA.F64, r.f64())  # 08, 46
         case (n, _): return (IOpA(tri), r.si(n))
 
 
