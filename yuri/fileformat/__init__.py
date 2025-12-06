@@ -1,4 +1,4 @@
-from .common import Rdr
+from .common import Rdr, CP932
 from .expr import Typ, Tyq, TIns, Ins, IOpA, IOpB, IOpV
 from .ypf import read as ypf_read, make as ypf_make
 from .yscm import YSCM, MArg, MCmd
@@ -10,7 +10,7 @@ from .ysvr import YSVR, Var
 from .yscd import YSCD, DArg, DCmd, DVar
 from .ystb import YSTB, RArg, RCmd, AOp
 __all__ = [
-    'Rdr',
+    'Rdr', 'CP932',
     'Typ', 'Tyq', 'TIns', 'Ins', 'IOpA', 'IOpB', 'IOpV',
     'ypf_read', 'ypf_make',
     'YSCM', 'MArg', 'MCmd',

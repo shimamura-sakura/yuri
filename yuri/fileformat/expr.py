@@ -8,6 +8,7 @@ class Typ(IntEnum):
     Int = 1
     Flt = 2
     Str = 3
+    def tyq(self): return Tyq.STR if self == Typ.Str else Tyq.NUM
 
 
 class Tyq(IntEnum):
