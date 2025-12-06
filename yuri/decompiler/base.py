@@ -134,7 +134,7 @@ class YDecBase(ABC):
     @abstractmethod
     def var_to_ast(self, tyq: Tyq, idx: int) -> ast.expr: pass
 
-    def ins_to_ast(self, lst: Seq[TIns], lit_str: bool) -> ast.expr:
+    def ins_to_ast(self, lst: Seq[TIns], lit_str: bool = False) -> ast.expr:
         stk: list[ast.expr | None] = []
         for ins in lst:
             assert not isinstance(ins, Buffer)

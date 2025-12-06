@@ -117,7 +117,7 @@ class YDecYuris(YDecBase):
                             line.append(f'{cmdname}[{lhsstr}]')
                         else:
                             line.append(f'{cmdname}[{lhsstr}={rhsstr}]')
-                case _:
+                case code:
                     argsegs: list[str] = []
                     cmdname, argnames = cnames[code]
                     for arg in args:
