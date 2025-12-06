@@ -18,8 +18,9 @@ class Scr:
     ntext: int = 0
 
     @classmethod
-    def read(cls, r: Rdr, st: St):
+    def read(cls, r: Rdr, st: St, i: int):
         iscr, plen = cast(TScrHead, r.unpack(SScrHead))
+        assert iscr == i, f'iscr({iscr}) != i{i}'
         return cls(iscr, r.str(plen), *r.unpack(st))
 
     def writeV200(self, f: BinIO, enc: str):
@@ -44,7 +45,7 @@ class YSTL:
         assert mag == YstlMagic, f'not yst_list.ybn magic: {mag}'
         assert (v := v or v_) in VerRange, f'unsupported version: {v}'
         st = SScrV470 if v >= 470 else SScrV200
-        scrs = [Scr.read(r, st) for _ in range(nscr)]
+        scrs = [Scr.read(r, st, i) for i in range(nscr)]
         r.assert_eof(v)
         return cls(v, scrs)
 
@@ -54,3 +55,7 @@ class YSTL:
         wfn = Scr.writeV470 if v >= 470 else Scr.writeV200
         for s in self.scrs:
             wfn(s, f, enc)
+
+    def print(self, f: TextIO = stdout):
+        f.write(f'YSTL ver={self.ver} nscr={len(self.scrs)}')
+        f.writelines(f'[{i}] {l}\n' for i, l in enumerate(self.scrs))
