@@ -35,8 +35,8 @@ class IOpV(IntEnum):
 class IOpB(IntEnum):
     IDXEND = 0x0129
     NOP = 0x2C
-    TOI = 0x73
-    TOS = 0x69
+    TOI = 0x69
+    TOS = 0x73
     NEG = 0x52
     MUL = 0x2A
     DIV = 0x2F
