@@ -8,7 +8,7 @@ from .ystd import YSTD
 from .ystl import YSTL, Scr
 from .ysvr import YSVR, Var
 from .yscd import YSCD, DArg, DCmd, DVar
-from .ystb import YSTB, RArg, RCmd, AOp, CmdCodes
+from .ystb import YSTB, RArg, RCmd, AOp, CmdCodes, KEY_200, KEY_290
 __all__ = [
     'Rdr', 'CP932', 'VScope', 'VScoEx', 'VMinUsr',
     'Typ', 'Tyq', 'TIns', 'Ins', 'IOpA', 'IOpB', 'IOpV',
@@ -20,5 +20,5 @@ __all__ = [
     'YSTL', 'Scr',
     'YSVR', 'Var',
     'YSCD', 'DArg', 'DCmd', 'DVar',
-    'YSTB', 'RArg', 'RCmd', 'AOp', 'CmdCodes'
+    'YSTB', 'RArg', 'RCmd', 'AOp', 'CmdCodes', 'KEY_200', 'KEY_290'
 ]
