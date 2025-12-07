@@ -1,4 +1,5 @@
 from .common import *
+from json import dumps
 from enum import nonmember
 from collections.abc import Buffer, Sized
 
@@ -111,3 +112,7 @@ class Ins:
         if -0x80000000 <= i <= 0x7FFFFFFF:
             return (IOpA.I32, i)
         return (IOpA.I64, i)
+
+    @staticmethod
+    def strv(s: str):
+        return dumps(s, ensure_ascii=False)
