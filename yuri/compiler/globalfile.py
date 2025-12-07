@@ -40,7 +40,7 @@ def do_vardef(stmt: ast.stmt, limit_sco: VScope) -> TVarDef | None:
                     assert isinstance(init, str)
                     return (name, sex, dims, typ, init)
         case ast.Pass() | ast.Expr(ast.Call(ast.Name('END'))): return None
-        case _: assert False, ast.unparse(stmt)
+        case _: assert False, f'not a declaration: {ast.unparse(stmt)}'
 
 
 def do_var(var: ast.expr, typ: Typ) -> tuple[str, Seq[int]]:
