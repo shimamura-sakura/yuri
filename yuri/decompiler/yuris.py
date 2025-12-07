@@ -1,6 +1,5 @@
 from .base import *
 from typing import Never
-from ..fileformat import *
 
 
 class YDecYuris(YDecBase):

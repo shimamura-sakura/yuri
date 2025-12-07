@@ -1,6 +1,6 @@
 from .base import *
 from typing import Never
-from ..fileformat import *
+from enum import IntEnum
 
 
 class Ctl(IntEnum):

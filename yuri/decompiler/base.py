@@ -1,11 +1,10 @@
 import re
 import ast
-from typing import Any
+from ..fileformat import *
 from collections.abc import Buffer
 from abc import ABC, abstractmethod
 from collections import defaultdict as defdic
-from ..fileformat import *
-from ..fileformat.expr import *
+from typing import cast, Any, Sequence as Seq
 StrNoInit = []
 IntNoInit = [(IOpA.I64, 0)]
 SExCh = ['', '', '2', '3']
