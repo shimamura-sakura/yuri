@@ -1,4 +1,4 @@
-from .common import Rdr, CP932
+from .common import Rdr, CP932, VScope, VScoEx, VMinUsr
 from .expr import Typ, Tyq, TIns, Ins, IOpA, IOpB, IOpV
 from .ypf import read as ypf_read, make as ypf_make
 from .yscm import YSCM, MArg, MCmd
@@ -6,11 +6,11 @@ from .yser import YSER, Err
 from .yslb import YSLB, Lbl
 from .ystd import YSTD
 from .ystl import YSTL, Scr
-from .ysvr import YSVR, Var, VScope, VScoEx, VMinUsr
+from .ysvr import YSVR, Var
 from .yscd import YSCD, DArg, DCmd, DVar
 from .ystb import YSTB, RArg, RCmd, AOp, CmdCodes
 __all__ = [
-    'Rdr', 'CP932',
+    'Rdr', 'CP932', 'VScope', 'VScoEx', 'VMinUsr',
     'Typ', 'Tyq', 'TIns', 'Ins', 'IOpA', 'IOpB', 'IOpV',
     'ypf_read', 'ypf_make',
     'YSCM', 'MArg', 'MCmd',
@@ -18,7 +18,7 @@ __all__ = [
     'YSLB', 'Lbl',
     'YSTD',
     'YSTL', 'Scr',
-    'YSVR', 'Var', 'VScope', 'VScoEx', 'VMinUsr',
+    'YSVR', 'Var',
     'YSCD', 'DArg', 'DCmd', 'DVar',
     'YSTB', 'RArg', 'RCmd', 'AOp', 'CmdCodes'
 ]
