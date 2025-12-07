@@ -10,6 +10,11 @@ class Ctl(IntEnum):
     LOOP = 3
 
 
+def check_pass(lst: list[ast.stmt]):
+    if len(lst) == 0:
+        lst.append(ast.Pass())
+
+
 TyqPrefToSuf = {'$': 'S', '@': 'N', '&@': 'AN', '&$': 'AS', '$@': 'SN'}
 AstListLbl: list[ast.expr] = [ast.Name('LBL')]
 AstListUnderline = ast.Name('_')
@@ -183,8 +188,3 @@ class YDecYuri(YDecBase):
                     else:
                         stk[-1].append(ast.Expr(c_call))
         return ast.unparse(ast.Module(root))
-
-
-def check_pass(lst: list[ast.stmt]):
-    if len(lst) == 0:
-        lst.append(ast.Pass())
