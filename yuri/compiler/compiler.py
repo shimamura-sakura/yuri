@@ -273,15 +273,13 @@ def compile_file(
         match ins:
             case (_, _, idx): pass
             case _: return
+        # assert int.from_bytes(expr_dat[pre_len+4:pre_len+6], LE) == idx
         if (isym := idx - VMinUsr) < 0:
             return
-        # assert int.from_bytes(expr_dat[pre_len+4:pre_len+6], LE) == idx
         syms[isym][0].append(pre_len+4)  # IOpV, 0x03, 0x01, Tyq, ISym:u16LE
 
     do_stmt_list(module.body)
-    ystb_segs = assemble_ystb(cmds, ver, enc, post_ins)
-    with open('/tmp/yuri-dev/test-yuri.ybn', 'wb') as fp:
-        fp.writelines(ystb_segs)
+    assemble_ystb(cmds, ver, enc, post_ins)
 
 
 AOpIns = [IOpB.NOP, IOpB.ADD, IOpB.SUB, IOpB.MUL, IOpB.DIV, IOpB.MOD, IOpB.BAND, IOpB.BOR, IOpB.BOR]
