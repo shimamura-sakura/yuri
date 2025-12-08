@@ -15,7 +15,7 @@ def compile_file(
         gvars: dict[str, Typ],
         fvars: dict[str, Typ],
         module: ast.Module, ver: int, enc: str):
-
+    cmds: list[Cmd] = []
     svars: dict[str, tuple[Typ, int]] = {}  # script vars
     lvars: dict[str, tuple[Typ, int]] = {}  # local vars - allow redefinition
     erefs: dict[str, tuple[Typ, int]] = {}  # reference to c/g/f vars
@@ -275,7 +275,6 @@ def compile_file(
         syms[isym][0].append(pre_len+4)  # IOpV, 0x03, 0x01, Tyq, ISym:u16LE
 
     ntxt, nvar = 0, 0
-    cmds: list[Cmd] = []
     lbls: dict[str, Cmd] = {}
     syms: list[LSym | ESym | SSym] = []
     do_stmt_list(module.body)
