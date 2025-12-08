@@ -16,7 +16,7 @@ See [v494.py](v494.py)
 
 Download 0.494 official sdk, use YSPac to pack all folders under `システム/data/`
 
-![](pics/xfce4_screenshot.png)
+![](pics/ss-2025-12-08_20-40-44_1765197644.png)
 
 Then copy `data.ypf` into `example`.
 
