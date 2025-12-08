@@ -57,8 +57,11 @@ def compile_file(
                     syms.append(([], name))  # add ERef
             case _: assert False, ast.unparse(var)
         match (suf := var.attr):
-            case 'N': tyq, num = Tyq.NUM, True
-            case 'S': tyq, num = Tyq.STR, False
+            case 'N': tyq, num = Tyq.NUM, True    # @
+            case 'S': tyq, num = Tyq.STR, False   # $
+            case 'AN': tyq, num = Tyq.X60, True   # &@
+            case 'AS': tyq, num = Tyq.X23, False  # &$
+            case 'SN': tyq, num = Tyq.X23, True   # $@
             case _: assert False, f'unknown suffix {suf}: {ast.unparse(var)}'
         assert (typ != Typ.Str) == num, f'ref {name}: suffix {suf}, but type {typ.name}'
         into.append((ins, tyq, idx))

@@ -1,5 +1,7 @@
 .vscode
-files
+files/*
+example/*
+!files/v494
 **/__pycache__
 notes
 test-*
