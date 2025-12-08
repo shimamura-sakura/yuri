@@ -31,11 +31,12 @@ class YDecYuri(YDecBase):
     AstNameTOS = ast.Name('str')
     AstEmpty = ast.Constant(None)
 
-    def var_to_ast(self, tyq: Tyq, idx: int) -> ast.expr:
-        tyqpref, name = self.ins_get_var(tyq, idx)
+    def var_to_ast(self, tyq: Tyq, idx: int, lvars: dict[int, tuple[str, Var]]) -> ast.expr:
+        tyqpref, name = self.ins_get_var(tyq, idx, lvars)
         return ast.Attribute(ast.Name(name), TyqPrefToSuf[tyqpref])
 
     def _init_gfile(self) -> str:
+        empty_lvars: dict[int, tuple[str, Var]] = {}
         lines: list[str] = []
         for v in self.vars:
             if v is None or v[1].ivar < VMinUsr or v[1].scope != VScope.G:
@@ -44,7 +45,7 @@ class YDecYuri(YDecBase):
                 case None: continue
                 case (Typ.Int, i): rhs = f'={i}' if i else ''
                 case (Typ.Flt, f): rhs = f'={f}' if f else ''
-                case (Typ.Str, l): rhs = '='+ast.unparse(self.ins_to_ast(l)) if len(l) else ''
+                case (Typ.Str, l): rhs = '='+ast.unparse(self.ins_to_ast(l, empty_lvars)) if len(l) else ''
             (name, var), typ = v, vi[0]
             suf = '.S' if typ == Typ.Str else '.N'
             cmd = f'G_{typ.name.upper()}{SExCh[v[1].scoex]}'
@@ -57,6 +58,7 @@ class YDecYuri(YDecBase):
         cnames, codes, defcmds = self.cnames, self.codes, self.defcmds
         lbls = self.lbls[iscr] if iscr < len(self.lbls) else {}
         stk: list[list[ast.stmt]] = [root := []]
+        lvars: dict[int, tuple[str, Var]] = {}
         ctl: list[Ctl] = []
         for c in ystb.cmds:
             if (off_lbls := lbls.get(c.off)):
@@ -70,14 +72,14 @@ class YDecYuri(YDecBase):
                     # if elif -> [-3][-1]if [-2]if/elif.else [-1]elif.body
                     assert narg == 3
                     assert isinstance(dat := args[0].dat, list)
-                    stk[-1].append(ifs := ast.If(self.ins_to_ast(dat)))
+                    stk[-1].append(ifs := ast.If(self.ins_to_ast(dat, lvars)))
                     stk.append(ifs.body)
                     ctl.append(Ctl.IF)
                 case codes.ELSE if narg == 3:
                     assert (top := ctl[-1]) in CtlIfElif
                     assert isinstance(dat := args[0].dat, list)
                     assert isinstance(ifs := stk[-2][-1], ast.If)
-                    ifs.orelse.append(eifs := ast.If(self.ins_to_ast(dat)))
+                    ifs.orelse.append(eifs := ast.If(self.ins_to_ast(dat, lvars)))
                     if top == Ctl.IF:
                         stk.append(eifs.body)
                         ctl.append(Ctl.ELIF)
@@ -110,7 +112,7 @@ class YDecYuri(YDecBase):
                 case codes.LOOP:
                     assert narg == 2
                     assert isinstance(dat := args[0].dat, list)
-                    stk[-1].append(ws := ast.While(self.ins_to_ast(dat)))
+                    stk[-1].append(ws := ast.While(self.ins_to_ast(dat, lvars)))
                     stk.append(ws.body)
                     ctl.append(Ctl.LOOP)
                 case codes.LOOPEND:
@@ -120,7 +122,7 @@ class YDecYuri(YDecBase):
                     check_pass(stk.pop())
                 case codes._:
                     assert narg == 1 and isinstance(dat := args[0].dat, list)
-                    stk[-1].append(ast.Expr(ast.Subscript(AstListUnderline, self.ins_to_ast(dat))))
+                    stk[-1].append(ast.Expr(ast.Subscript(AstListUnderline, self.ins_to_ast(dat, lvars))))
                 case codes.WORD:
                     assert narg == 1 and isinstance(dat := args[0].dat, str)
                     stk[-1].append(ast.Expr(ast.Constant(dat)))
@@ -143,9 +145,9 @@ class YDecYuri(YDecBase):
                             case Typ.Int: ini = (typ, 0)
                             case Typ.Flt: ini = (typ, 0.0)
                             case Typ.Str: ini = (typ, (''))
-                        self.def_var(idx, Var(sco, sex, iscr, idx, (), ini))
-                    lhsast = self.ins_to_ast(lhsdat)
-                    rhsast = self.ins_to_ast(rhsdat)
+                        self.def_local(idx, Var(sco, sex, iscr, idx, (), ini), lvars)
+                    lhsast = self.ins_to_ast(lhsdat, lvars)
+                    rhsast = self.ins_to_ast(rhsdat, lvars)
                     if code == codes.LET:
                         if not isinstance(lhsast, ast.Attribute):
                             assert isinstance(lhsast, ast.Call)
@@ -159,7 +161,7 @@ class YDecYuri(YDecBase):
                         match lhsdat[0]:
                             case (IOpV(), _, idx): pass
                             case _: assert False
-                        assert (v := self.vars[idx]) is not None
+                        assert (v := (idx < len(self.vars) and self.vars[idx]) or lvars[idx]) is not None
                         assert (vi := v[1].init) is not None
                         s_noinit = vi[1] == StrNoInit
                         n_noinit = rhsdat == IntNoInit
@@ -177,7 +179,7 @@ class YDecYuri(YDecBase):
                         assert isinstance(dat := arg.dat, list)
                         assert len(a_name := argnames[arg.id]) > 0
                         a_name = 'LBL' if a_name == '#' else a_name
-                        a_expr = self.ins_to_ast(dat)
+                        a_expr = self.ins_to_ast(dat, lvars)
                         if arg.aop == 0:
                             kwlist.append(ast.keyword(a_name, a_expr))
                         else:

@@ -7,18 +7,19 @@ class YDecYuris(YDecBase):
     AstNameTOI = ast.Name('@')
     AstNameTOS = ast.Name('$')
 
-    def var_to_ast(self, tyq: Tyq, idx: int) -> ast.expr:
-        tyqpref, name = self.ins_get_var(tyq, idx)
+    def var_to_ast(self, tyq: Tyq, idx: int, lvars: dict[int, tuple[str, Var]]) -> ast.expr:
+        tyqpref, name = self.ins_get_var(tyq, idx, lvars)
         return ast.Name(tyqpref+name)
 
-    def ins_to_expr(self, lst: Seq[TIns]) -> str:
-        res = ast.unparse(yuris_prec(self.ins_to_ast(lst, True))[1])
+    def ins_to_expr(self, lst: Seq[TIns], lvars: dict[int, tuple[str, Var]]) -> str:
+        res = ast.unparse(yuris_prec(self.ins_to_ast(lst, lvars, True))[1])
         res = res.replace(' and ', ' && ')
         res = res.replace(' or ', ' || ')
         return res
 
     def _init_gfile(self) -> str:
         lines: list[str] = []
+        empty_lvars: dict[int, tuple[str, Var]] = {}
         for v in self.vars:
             if v is None or v[1].ivar < VMinUsr or v[1].scope != VScope.G:
                 continue
@@ -26,7 +27,7 @@ class YDecYuris(YDecBase):
                 case None: continue
                 case (Typ.Int, i): rhs = f'={i}' if i else ''
                 case (Typ.Flt, f): rhs = f'={f}' if f else ''
-                case (Typ.Str, l): rhs = '='+self.ins_to_expr(l) if len(l) else ''
+                case (Typ.Str, l): rhs = '='+self.ins_to_expr(l, empty_lvars) if len(l) else ''
             (name, var), typ = v, vi[0]
             cmd = f'G_{typ.name.upper()}{SExCh[v[1].scoex]}'
             dims = f'({','.join(map(str, var.dims))})' if len(var.dims) else ''
@@ -38,6 +39,7 @@ class YDecYuris(YDecBase):
         lno, cnames, codes, defcmds = 1, self.cnames, self.codes, self.defcmds
         lbls = self.lbls[iscr] if iscr < len(self.lbls) else {}
         preps: list[str] = []
+        lvars: dict[int, tuple[str, Var]] = {}
         lines: list[list[str]] = [[] for _ in range(max(c.lno for c in ystb.cmds))]
         for i, c in enumerate(ystb.cmds):
             assert c.lno >= lno, f'lno not increasing: c.lno={c.lno}, prev_lno={lno}'
@@ -60,15 +62,15 @@ class YDecYuris(YDecBase):
                 case codes.IF | codes.ELSE as code:
                     assert narg == 3 and isinstance(dat := args[0].dat, list)
                     cmdname = 'IF' if code == codes.IF else 'ELSE'
-                    line.append(f'{cmdname}[{self.ins_to_expr(dat)}]')
+                    line.append(f'{cmdname}[{self.ins_to_expr(dat, lvars)}]')
                 case codes.LOOP:
                     assert narg == 2 and isinstance(dat := args[0].dat, list)
                     match dat:
                         case [(IOpA.I8, -1)]: line.append('LOOP[]')
-                        case _: line.append(f'LOOP[SET={self.ins_to_expr(dat)}]')
+                        case _: line.append(f'LOOP[SET={self.ins_to_expr(dat, lvars)}]')
                 case codes._:
                     assert narg == 1 and isinstance(dat := args[0].dat, list)
-                    line.append(f'_[{self.ins_to_expr(dat)}]')
+                    line.append(f'_[{self.ins_to_expr(dat, lvars)}]')
                 case codes.WORD:
                     assert narg == 1 and isinstance(dat := args[0].dat, str)
                     line.append(dat)
@@ -97,9 +99,9 @@ class YDecYuris(YDecBase):
                             case Typ.Int: ini = (typ, 0)
                             case Typ.Flt: ini = (typ, 0.0)
                             case Typ.Str: ini = (typ, (''))
-                        self.def_var(idx, Var(sco, sex, iscr, idx, (), ini))
-                    lhsstr = self.ins_to_expr(lhsdat)
-                    rhsstr = self.ins_to_expr(rhsdat)
+                        self.def_local(idx, Var(sco, sex, iscr, idx, (), ini), lvars)
+                    lhsstr = self.ins_to_expr(lhsdat, lvars)
+                    rhsstr = self.ins_to_expr(rhsdat, lvars)
                     if code == codes.LET:
                         line.append(f'{lhsstr}{lhs.aop}{rhsstr}')
                     else:
@@ -107,7 +109,7 @@ class YDecYuris(YDecBase):
                         match lhsdat[0]:
                             case (IOpV(), _, idx): pass
                             case _: assert False
-                        assert (v := self.vars[idx]) is not None
+                        assert (v := (idx < len(self.vars) and self.vars[idx]) or lvars[idx]) is not None
                         assert (vi := v[1].init) is not None
                         s_noinit = vi[1] == StrNoInit
                         n_noinit = rhsdat == IntNoInit
@@ -122,7 +124,7 @@ class YDecYuris(YDecBase):
                     for arg in args:
                         assert len(argname := argnames[arg.id]) > 0
                         assert isinstance(dat := arg.dat, list)
-                        argsegs.append(f'{argname}{arg.aop}{self.ins_to_expr(dat)}')
+                        argsegs.append(f'{argname}{arg.aop}{self.ins_to_expr(dat, lvars)}')
                     line.append(f'{cmdname}[{' '.join(argsegs)}]')
         assert len(lbls) == 0, 'lables not consumed: '+str(lbls)
         return '\n'.join(';'.join(line) for line in lines)

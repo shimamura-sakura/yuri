@@ -103,14 +103,13 @@ class YDecBase(ABC):
     @abstractmethod
     def _init_gfile(self) -> str: pass
 
-    def def_var(self, idx: int, v: Var):
-        assert idx >= len(self.vars) or self.vars[idx] is None, f'var already defined #{idx}'
-        self.vars.extend(None for _ in range(len(self.vars), idx+1))
-        self.vars[idx] = (self.make_name(v), v)
+    def def_local(self, idx: int, v: Var, lvars: dict[int, tuple[str, Var]]):
+        assert idx >= len(self.vars) or self.vars[idx] is None, f'redefine nonlocal #{idx}'
+        assert idx not in lvars, f'redefine local #{idx}'
+        lvars[idx] = (self.make_name(v), v)
 
-    def ins_get_var(self, tyq: Tyq, idx: int) -> tuple[str, str]:
-        assert (v := self.vars[idx]) is not None, f'undefined var #{idx}'
-        name, var = v
+    def ins_get_var(self, tyq: Tyq, idx: int, lvars: dict[int, tuple[str, Var]]) -> tuple[str, str]:
+        name, var = (idx < len(self.vars) and self.vars[idx]) or lvars[idx]
         assert (vi := var.init)
         vtyq = Tyq.STR if vi[0] == Typ.Str else Tyq.NUM
         match (tyq, vtyq):
@@ -131,9 +130,9 @@ class YDecBase(ABC):
     @abstractmethod
     def do_ystb(self, iscr: int, ystb: YSTB, *args: Any, **kwargs: Any) -> str: pass
     @abstractmethod
-    def var_to_ast(self, tyq: Tyq, idx: int) -> ast.expr: pass
+    def var_to_ast(self, tyq: Tyq, idx: int, lvars: dict[int, tuple[str, Var]]) -> ast.expr: pass
 
-    def ins_to_ast(self, lst: Seq[TIns], lit_str: bool = False) -> ast.expr:
+    def ins_to_ast(self, lst: Seq[TIns], lvars: dict[int, tuple[str, Var]], lit_str: bool = False) -> ast.expr:
         stk: list[ast.expr | None] = []
         for ins in lst:
             assert not isinstance(ins, Buffer)
@@ -148,11 +147,11 @@ class YDecBase(ABC):
                 case (IOpA(), v): stk.append(ast.Constant(v))
                 case (IOpV(opv), tyq, idx):
                     match opv:
-                        case IOpV.VAR: stk.append(self.var_to_ast(tyq, idx))
-                        case IOpV.ARR: stk.append(ast.Call(self.var_to_ast(tyq, idx)))
+                        case IOpV.VAR: stk.append(self.var_to_ast(tyq, idx, lvars))
+                        case IOpV.ARR: stk.append(ast.Call(self.var_to_ast(tyq, idx, lvars)))
                         case _:  # None, arr, dims
                             stk.append(None)
-                            stk.append(self.var_to_ast(tyq, idx))
+                            stk.append(self.var_to_ast(tyq, idx, lvars))
                 case IOpB.IDXEND:
                     dims: list[ast.expr] = []
                     while (d := stk.pop()) is not None:
