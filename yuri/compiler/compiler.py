@@ -174,7 +174,7 @@ def compile_file(
             nlvar += 1
             lvars[name] = (typ, len(syms)+VMinUsr)  # L def
             syms.append(([], sco))
-        add_cmd(cmd, Arg(0, do_expr(var, ins := []), 0, ins), Arg(0, do_expr(inite, ins := []), 0, ins))
+            add_cmd(cmd, Arg(0, do_expr(var, ins := []), 0, ins), Arg(0, do_expr(inite, ins := []), 0, ins))
 
     def do_stmt(stmt: ast.stmt):
         nonlocal ntxt, if_lv, loop_lv

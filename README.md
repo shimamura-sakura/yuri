@@ -65,3 +65,21 @@ Run `yu-ris.exe`.
    a YBN does not need to be re-compressed.  
    After an initial full compilation, subsequent compilations usually only takes
    a few seconds.
+
+## Differences from the official compiler
+
+1. No `global.yst` and `global_f.yst` entries in `yst_list.ybn`
+
+   The offical compiler writes an entry with `nvar=-1` for `global.yst` in `yst_list.ybn`.  
+   Official YSCom treats `global_f.yst` like normal scripts.  
+   But Yuri does not leave entries nor create YBN for them at all.
+
+2. No `S_INT/S_FLT/S_STR` commands in YBN files
+
+   The official compiler emits them, but actually they never get executed.
+   Even the author himself recommends putting them out of execution path.
+   So I skipped them completely, leaving only local INT/FLT/STR commands.
+   They are still in ysv.ybn files
+
+This two differences lead to that one cannot compile the code directly if they
+run the decompiler again on the compiled YBN files (need to add `G_/S_/F_` by themselves)
