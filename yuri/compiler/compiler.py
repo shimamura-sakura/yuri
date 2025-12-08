@@ -7,6 +7,9 @@ SSym = tuple[list[int], TVarDef]
 InitEInt = ast.Constant(0)
 InitEFlt = ast.Constant(0.0)
 InitEStr = ast.Constant('')
+# ntxt, nsvar, nlvar, (eoff, name, if_lv, loop_lv), syms, asm
+TCompile = tuple[int, int, int, list[tuple[int, str, int, int]],
+                 list[ESym | LSym | SSym], TAsmV200 | TAsmV300]
 
 
 def compile_file(
@@ -14,11 +17,14 @@ def compile_file(
         cvars: dict[str, tuple[Typ, int]],
         gvars: dict[str, Typ],
         fvars: dict[str, Typ],
-        module: ast.Module, ver: int, enc: str):
+        module: ast.Module, ver: int, enc: str) -> TCompile:
     cmds: list[Cmd] = []
+    syms: list[LSym | ESym | SSym] = []
+    lbls: dict[str, tuple[Cmd, int, int]] = {}
     svars: dict[str, tuple[Typ, int]] = {}  # script vars
     lvars: dict[str, tuple[Typ, int]] = {}  # local vars - allow redefinition
     erefs: dict[str, tuple[Typ, int]] = {}  # reference to c/g/f vars
+    ntxt, nsvar, nlvar, if_lv, loop_lv = 0, 0, 0, 0, 0
 
     def add_cmd(cmd: str, *args: Arg, **kwargs: Arg) -> Cmd:
         alist: list[Arg] = []
@@ -37,7 +43,7 @@ def compile_file(
     def add_lbl(lbl: str):
         assert lbl not in lbls, f'already defined LBL: {lbl}'
         cmds.append(c := Cmd(-1, (), 0, 0, skip=SkipLabel))
-        lbls[lbl] = c
+        lbls[lbl] = (c, if_lv, loop_lv)
 
     def do_varref(var: ast.Attribute, ins: IOpV, into: list[TIns]) -> Typ:
         match var.value:
@@ -135,8 +141,7 @@ def compile_file(
             case _: assert False, ast.unparse(expr)
 
     def do_defvar(stmt: ast.stmt, cmd: str, var: ast.expr, inite: ast.expr | None):
-        nonlocal nvar
-        nvar += 1
+        nonlocal nsvar, nlvar
         sco, sex, typ = DefVarCmd[cmd]
         if sco not in (VScope.S, VScope.L):
             assert False, f'in non-global file: {ast.unparse(stmt)}'
@@ -152,6 +157,7 @@ def compile_file(
                 case Typ.Flt: inite = InitEFlt
                 case Typ.Str: inite = InitEStr
         if sco == VScope.S:
+            nsvar += 1
             assert name not in lvars, f'already defined L: {ast.unparse(stmt)}'
             init = do_constexpr(inite)
             match typ:
@@ -162,15 +168,17 @@ def compile_file(
             svars[name] = (typ, len(syms)+VMinUsr)  # S def
             syms.append(([], cast(TVarDef, (name, sex, dims, typ, init))))
         else:
+            nlvar += 1
             lvars[name] = (typ, len(syms)+VMinUsr)  # L def
             syms.append(([], sco))
         add_cmd(cmd, Arg(0, do_expr(var, ins := []), 0, ins), Arg(0, do_expr(inite, ins := []), 0, ins))
 
     def do_stmt(stmt: ast.stmt):
-        nonlocal ntxt
+        nonlocal ntxt, if_lv, loop_lv
         match stmt:
             case ast.Pass(): pass
             case ast.If(test, body, orelse):
+                if_lv += 1
                 add_cmd('IF', Arg(0, do_expr(test, ins := []), 0, ins),
                         ela := Arg(0, 0, 0, None), ifend := Arg(0, 0, 0, None))
                 elifs, last_else = do_elif_chain(orelse)
@@ -186,11 +194,14 @@ def compile_file(
                     ela.dat = add_cmd('ELSE')
                     do_stmt_list(last_else)
                 ifend.dat = add_cmd('IFEND')
+                if_lv -= 1
             case ast.While(test, body):  # TODO: literal -1
+                loop_lv += 1
                 add_cmd('LOOP', Arg(0, do_expr(test, ins := []), 0, ins),
                         loopend := Arg(0, 0, 0, None))
                 do_stmt_list(body)
                 loopend.dat = add_cmd('LOOPEND')
+                loop_lv -= 1
             case ast.With([ast.withitem(ast.Call(ast.Name(cmd), [], kwlist))], body):
                 kwargs: dict[str, Arg] = {}
                 for kwitem in kwlist:
@@ -274,11 +285,10 @@ def compile_file(
             return
         syms[isym][0].append(pre_len+4)  # IOpV, 0x03, 0x01, Tyq, ISym:u16LE
 
-    ntxt, nvar = 0, 0
-    lbls: dict[str, Cmd] = {}
-    syms: list[LSym | ESym | SSym] = []
     do_stmt_list(module.body)
-    assemble_ystb(cmds, ver, enc, post_ins)
+    ybnseg = assemble_ystb(cmds, ver, enc, post_ins)
+    lblpos = [(v.cmds_idx if ver >= 300 else v.cmds_off, k, i, l) for k, (v, i, l) in lbls.items()]
+    return ntxt, nsvar, nlvar, lblpos, syms, ybnseg
 
 
 AOpIns = [IOpB.NOP, IOpB.ADD, IOpB.SUB, IOpB.MUL, IOpB.DIV, IOpB.MOD, IOpB.BAND, IOpB.BOR, IOpB.BOR]

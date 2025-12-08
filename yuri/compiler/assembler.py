@@ -79,9 +79,11 @@ TCmdV200 = St('<BBI')  # code:B narg:B line:I => 6
 TCmdV300 = St('<BBH')  # code:B narg:B npar:H => 4
 TYstb200 = St('<4s4I12x')  # YSTB:4s ver,lcmd,lexp,oexp:4I       12x => 32
 TYstb300 = St('<4s6I4x')   # YSTB:4s ver,ncmd,lcmd,larg,lexp,llno 4x => 32
+TAsmV200 = tuple[bytes, bytearray, bytearray]
+TAsmV300 = tuple[bytes, bytearray, bytearray, bytearray, bytearray]
 
 
-def assemble_ystb(cmds: Seq[Cmd], v: int, enc: str, post_ins: PostIns | None):
+def assemble_ystb(cmds: Seq[Cmd], v: int, enc: str, post_ins: PostIns | None) -> TAsmV200 | TAsmV300:
     cmds_idx = 0
     cmds_off = [0]
     expr_dat = bytearray()

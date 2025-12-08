@@ -8,7 +8,7 @@ TVarDef = tuple[str, VScoEx, Seq[int], Lit[Typ.Str], str] \
     | tuple[str, VScoEx, Seq[int], Lit[Typ.Flt], int | float]
 
 
-def do_gfile(mod: ast.Module, limit_sco: Lit[VScope.G, VScope.F]):
+def do_gfile(mod: ast.Module, limit_sco: Lit[VScope.G, VScope.F]) -> list[TVarDef]:
     return list(filter(None, (do_vardef(stmt, limit_sco) for stmt in mod.body)))
 
 
