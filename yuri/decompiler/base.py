@@ -48,6 +48,9 @@ IOpBLogAst: dict[IOpB, ast.boolop] = {
 
 
 class YDecBase(ABC):
+    ExtraExt: str
+    EmptyFile: str
+    DefaultEnc: str
     AstEmpty: ast.expr
     AstNameTOI: ast.expr
     AstNameTOS: ast.expr
@@ -81,7 +84,7 @@ class YDecBase(ABC):
             if (tup := DefVarCmd.get(name)):
                 self.defcmds[code] = tup
         vars = self.vars = [None] * (1+max(v.ivar for v in ysvr.vars))
-        lbls = self.lbls = [defdic(lambda: []) for _ in range(1+max_iscr)]
+        lbls = self.lbls = [defdic(list) for _ in range(1+max_iscr)]
         for l in yslb.lbls:  # v>=300: sizeof(Cmd)=4: (code:H narg:B npar:B)
             p = l.pos*4 if yslb.ver >= 300 else l.pos  # <300: l.pos is cmds_off
             lbls[l.iscr][p].append(l.name)

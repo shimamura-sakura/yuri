@@ -27,6 +27,9 @@ Aug: list[ast.operator] = [
 
 
 class YDecYuri(YDecBase):
+    ExtraExt = '.yuri'
+    EmptyFile = 'pass'
+    DefaultEnc = 'utf-8'
     AstNameTOI = ast.Name('int')
     AstNameTOS = ast.Name('str')
     AstEmpty = ast.Constant(None)

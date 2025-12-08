@@ -3,6 +3,9 @@ from typing import Never
 
 
 class YDecYuris(YDecBase):
+    ExtraExt = ''
+    EmptyFile = ';'
+    DefaultEnc = CP932
     AstEmpty = ast.Name('')
     AstNameTOI = ast.Name('@')
     AstNameTOS = ast.Name('$')

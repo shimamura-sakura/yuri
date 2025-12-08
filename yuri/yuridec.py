@@ -1,0 +1,75 @@
+from os import path, makedirs
+from yuri.decompiler import *
+from yuri.fileformat import *
+from multiprocessing import Pool
+from typing import NamedTuple
+__all__ = ['run', 'YDecYuris', 'YDecYuri']
+
+
+class DecCtx(NamedTuple):
+    cmdcodes: CmdCodes
+    cmds: list[MCmd]
+    ydec: YDecBase
+    ienc: str
+    opath: str
+    ext: str
+    oenc: str
+    dump: bool
+
+
+def task_decompile(arg: tuple[int, str, str, str, DecCtx]):
+    iscr, scrpath, ybnpath, opath, ctx = arg
+    print(iscr, scrpath)
+    with open(ybnpath, 'rb') as fp:
+        ystb = YSTB.read(fp, ctx.cmdcodes, enc=ctx.ienc)
+    if ctx.dump:
+        with open(opath+'.dump', 'w', encoding='utf-8') as fp:
+            ystb.print(ctx.cmds, fp)
+    text = ctx.ydec.do_ystb(iscr, ystb)
+    with open(ctx.opath+ctx.ext, 'w', encoding=ctx.oenc, newline='\r\n') as fp:
+        fp.write(text)
+
+
+def run(
+    iroot: str,
+    oroot: str,
+    ienc: str = CP932,
+    oenc: str | None = None,
+    yscd: YSCD | None = None,
+    dcls: type[YDecBase] = YDecYuris,
+    mp_parallel: bool = True, also_dump: bool = False
+):
+    with open(f'{iroot}/ysc.ybn', 'rb') as fp:
+        yscm = YSCM.read(Rdr.from_bio(fp, ienc))
+    with open(f'{iroot}/ysv.ybn', 'rb') as fp:
+        ysvr = YSVR.read(Rdr.from_bio(fp, ienc))
+    with open(f'{iroot}/ysl.ybn', 'rb') as fp:
+        yslb = YSLB.read(Rdr.from_bio(fp, ienc))
+    with open(f'{iroot}/yst_list.ybn', 'rb') as fp:
+        ystl = YSTL.read(Rdr.from_bio(fp, ienc))
+    ydec = dcls(yscm, ysvr, yslb, yscd)
+    tasklist: list[tuple[int, str, str, str, DecCtx]] = []
+    oenc = oenc or dcls.DefaultEnc
+    for scr in ystl.scrs:
+        opath = path.join(oroot, scr.path.replace('\\', '/'))
+        makedirs(path.dirname(opath), exist_ok=True)
+        if scr.nvar < 0:
+            print(scr.iscr, scr.path)
+            if ydec.out_gfile and not 'macro' in scr.path.lower():
+                text = ydec.out_gfile
+                ydec.out_gfile = None
+            else:
+                text = ydec.EmptyFile
+            with open(opath+dcls.ExtraExt, 'w', encoding=oenc, newline='\r\n') as fp:
+                fp.write(text)
+        else:
+            ybnpath = f'{iroot}/yst{scr.iscr:0>5}.ybn'
+            ctx = DecCtx(yscm.cmdcodes, yscm.cmds, ydec, ienc, opath,
+                         dcls.ExtraExt, oenc, also_dump)
+            tasklist.append((scr.iscr, scr.path, ybnpath, opath, ctx))
+    if mp_parallel:
+        with Pool() as pool:
+            pool.map(task_decompile, tasklist)
+    else:
+        for task in tasklist:
+            task_decompile(task)
