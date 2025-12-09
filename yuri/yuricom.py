@@ -24,6 +24,7 @@ class ComCtx(NamedTuple):
     cdict: dict[str, tuple[Typ, int]]
     gvar_typ: dict[str, Typ]
     ver: int
+    i_enc: str
     o_enc: str
 
 
@@ -35,6 +36,7 @@ def task_compile(arg: tuple[str, str, tuple[dict[str, Typ], bytes], ComCtx]) -> 
     with open(filepath, 'rb') as ft:
         text = ft.read()
         txthash = sha256(text).digest()
+        text = str(text, c.i_enc)
     try:
         with open(hashpath, 'rb') as fp:
             hfg, htxt = pickle.load(fp)
@@ -186,7 +188,7 @@ def run(
     empty_fvars: dict[str, Typ] = {}
     empty_hashfg = sha256(pickle.dumps((gvar_typ, empty_fvars), pickle.HIGHEST_PROTOCOL))
     empty_pair = (empty_fvars, empty_hashfg.digest())
-    com_ctx = ComCtx(wroot, iroot, force_recompile, cdefs, cdict, gvar_typ, ver, o_enc)
+    com_ctx = ComCtx(wroot, iroot, force_recompile, cdefs, cdict, gvar_typ, ver, i_enc, o_enc)
     com_tasks = [(filepath, dirpath, fvars_typ.get(dirpath, empty_pair), com_ctx)
                  for dirpath, filepath in source_list]
     if mp_parallel:
