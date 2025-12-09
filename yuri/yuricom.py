@@ -19,6 +19,7 @@ THashCompULen = tuple[bytes, int]
 class ComCtx(NamedTuple):
     wroot: str
     iroot: str
+    custom_oenc: bool
     force_recompile: bool
     cdefs: dict[str, tuple[int, dict[str, int]]]
     cdict: dict[str, tuple[Typ, int]]
@@ -36,7 +37,8 @@ def task_compile(arg: tuple[str, str, tuple[dict[str, Typ], bytes], ComCtx]) -> 
     with open(filepath, 'rb') as ft:
         itbytes = ft.read()
         text = str(itbytes, c.i_enc)
-        otbytes = itbytes if c.o_enc == c.i_enc else bytes(text, c.o_enc)
+        otbytes = (itbytes if c.o_enc == c.i_enc or not c.custom_oenc
+                   else bytes(text, c.o_enc))
         txthash = sha256(otbytes).digest()
     try:
         with open(hashpath, 'rb') as fp:
@@ -120,7 +122,9 @@ def run(
     o_enc: str = CP932,  # encoding in output files
     # SysVar:name -> Typ, idx, otherwise only __SysXXX is available
     cdict: dict[str, tuple[Typ, int]] | None = None,
-    force_recompile: bool = False, mp_parallel: bool = True,
+    mp_parallel: bool = True,
+    custom_oenc: bool = False,
+    force_recompile: bool = False,
 ):
     # template files: YSVR, YSCM, YSCFG, YSER
     with open(f'{troot}/ysv.ybn', 'rb') as fp:
@@ -189,7 +193,8 @@ def run(
     empty_fvars: dict[str, Typ] = {}
     empty_hashfg = sha256(pickle.dumps((gvar_typ, empty_fvars), pickle.HIGHEST_PROTOCOL))
     empty_pair = (empty_fvars, empty_hashfg.digest())
-    com_ctx = ComCtx(wroot, iroot, force_recompile, cdefs, cdict, gvar_typ, ver, i_enc, o_enc)
+    com_ctx = ComCtx(wroot, iroot, custom_oenc,
+                     force_recompile, cdefs, cdict, gvar_typ, ver, i_enc, o_enc)
     com_tasks = [(filepath, dirpath, fvars_typ.get(dirpath, empty_pair), com_ctx)
                  for dirpath, filepath in source_list]
     if mp_parallel:
