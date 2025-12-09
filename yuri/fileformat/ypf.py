@@ -52,9 +52,10 @@ def ent_64b(f: BinIO) -> TEnt: return SEnt_64B.unpack(f.read(22))
 
 
 def ver_hash(v: int, h: THashFn | None = None):
-    if v >= 470:
+    if v >= 477: # real number ?
         h = h or hashMMH
     elif v >= 265:
+        # 476: Natsuzora Asterism Trial - CRC32
         h = h or hashCRC
     else:
         h = h or hashA32
@@ -65,7 +66,8 @@ def ver_consts(v: int,
                nl_map: bytes | None = None, nb_xor: bytes | None = None,
                h_name: THashFn | None = None, h_file: THashFn | None = None):
     h_name = ver_hash(v, h_name)
-    if v >= 470:
+    if v >= 477: # real number ?
+        # 476: Natsuzora Asterism Trial - CRC32
         f_ent = ent_64b
         s_ent = SEnt_64B
         h_file = h_file or hashMMH
@@ -84,6 +86,7 @@ def read(f: BinIO, *, v: int | None = None, enc: str = 'cp932',
     mag, v_, n, l, pad = cast(TYpfHead, SYpfHead.unpack(f.read(32)))
     assert mag == YpfMagic, f'not YPF magic: {mag}'
     assert pad == YpfPad16, f'nonzero in padding: {pad}'
+    print(v_)
     assert (v := v or v_) in VerRange, f'unsupported version: {v}'
     assert (l := l-32 if v >= 300 else l) >= 0, f'wrong version ?'
     assert (g := len(d := f.read(l))) == l, f'ents: want {l}, got {g}'

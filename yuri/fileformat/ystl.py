@@ -4,7 +4,7 @@ SYstlHead = St('<4sII')
 TYstlHead = tuple[bytes, int, int]
 SScrHead = St('<II')
 SScrV200 = St('<Q2i')
-SScrV470 = St('<Q3i')
+SScrV477 = St('<Q3i')
 TScrHead = tuple[int, int]
 
 
@@ -28,10 +28,10 @@ class Scr:
         f.writelines((SScrHead.pack(self.iscr, len(nb)), nb))
         f.write(SScrV200.pack(self.time, self.nvar, self.nlbl))
 
-    def writeV470(self, f: BinIO, enc: str):
+    def writeV477(self, f: BinIO, enc: str):
         nb = bytes(self.path, enc)
         f.writelines((SScrHead.pack(self.iscr, len(nb)), nb))
-        f.write(SScrV470.pack(self.time, self.nvar, self.nlbl, self.ntext))
+        f.write(SScrV477.pack(self.time, self.nvar, self.nlbl, self.ntext))
 
 
 @dataclass(slots=True)
@@ -44,7 +44,7 @@ class YSTL:
         mag, v_, nscr = cast(TYstlHead, r.unpack(SYstlHead))
         assert mag == YstlMagic, f'not yst_list.ybn magic: {mag}'
         assert (v := v or v_) in VerRange, f'unsupported version: {v}'
-        st = SScrV470 if v >= 470 else SScrV200
+        st = SScrV477 if v >= 477 else SScrV200
         scrs = [Scr.read(r, st, i) for i in range(nscr)]
         r.assert_eof(v)
         return cls(v, scrs)
@@ -52,7 +52,7 @@ class YSTL:
     def write(self, f: BinIO, enc: str = CP932, *, v: int | None = None):
         assert (v := v or self.ver) in VerRange, f'unsupported version: {v}'
         f.write(SYstlHead.pack(YstlMagic, v, len(self.scrs)))
-        wfn = Scr.writeV470 if v >= 470 else Scr.writeV200
+        wfn = Scr.writeV477 if v >= 477 else Scr.writeV200
         for s in self.scrs:
             wfn(s, f, enc)
 
