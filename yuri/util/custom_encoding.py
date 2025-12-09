@@ -51,10 +51,10 @@ def notimpelemented(input: Buffer, errors: str = 'strict'):
 
 class CustomEncodeFunc(NamedTuple):
     ofunc: Any
-    c_map: dict[int, int]
+    trans: list[int]
 
     def __call__(self, input: str, errors: str = 'strict') -> tuple[bytes, int]:
-        return self.ofunc(input.translate(self.c_map), errors)
+        return self.ofunc(input.translate(self.trans), errors)
 
 
 SGoodFail = Struct('<HH')
@@ -70,7 +70,10 @@ class CustomEncoder(NamedTuple):
                i_enc: str = 'utf-8', ends: Seq[str] = ('.yuri',)):
         assert (oinfo := search_function(o_enc)) is not None
         flst = create_mapping(iroot, o_enc, i_enc, ends)
-        func = CustomEncodeFunc(oinfo.encode, dict(flst))
+        trans = list(range(65536))
+        for fail, good in flst:
+            trans[fail] = good
+        func = CustomEncodeFunc(oinfo.encode, trans)
         info = CodecInfo(func, notimpelemented, name=name)
         return cls(name, info, flst)
 
