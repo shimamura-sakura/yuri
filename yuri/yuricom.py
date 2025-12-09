@@ -34,9 +34,10 @@ def task_compile(arg: tuple[str, str, tuple[dict[str, Typ], bytes], ComCtx]) -> 
     ycompath = workpath+'com'
     hashpath = workpath+'hash'
     with open(filepath, 'rb') as ft:
-        text = ft.read()
-        txthash = sha256(text).digest()
-        text = str(text, c.i_enc)
+        itbytes = ft.read()
+        text = str(itbytes, c.i_enc)
+        otbytes = itbytes if c.o_enc == c.i_enc else bytes(text, c.o_enc)
+        txthash = sha256(otbytes).digest()
     try:
         with open(hashpath, 'rb') as fp:
             hfg, htxt = pickle.load(fp)
