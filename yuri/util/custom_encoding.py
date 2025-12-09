@@ -1,9 +1,8 @@
+import codecs
 from struct import Struct
 from os import walk, path
 from collections.abc import Buffer
-from encodings import search_function
-from codecs import CodecInfo, register as register_codec
-from typing import Sequence as Seq, NamedTuple, Any, BinaryIO
+from typing import Sequence as Seq, NamedTuple, BinaryIO, Any
 __all__ = ['CustomEncoder']
 
 
@@ -28,6 +27,7 @@ def create_mapping(idir: str, oenc: str, ienc: str, ends: Seq[str]):
             goods.append(ch)
         except UnicodeEncodeError:
             fails.append(ord(ch))
+    print(''.join(map(chr, fails)))
     # map bad characters to good characters, keeping known good characters
     goodset = set(map(ord, goods))
     failmap: list[tuple[int, int]] = []
@@ -45,46 +45,47 @@ def create_mapping(idir: str, oenc: str, ienc: str, ends: Seq[str]):
     return failmap
 
 
-def notimpelemented(input: Buffer, errors: str = 'strict'):
-    raise NotImplemented
-
-
-class CustomEncodeFunc(NamedTuple):
-    ofunc: Any
-    trans: list[int]
-
-    def __call__(self, input: str, errors: str = 'strict') -> tuple[bytes, int]:
-        return self.ofunc(input.translate(self.trans), errors)
-
-
-SGoodFail = Struct('<HH')
-
-
 class CustomEncoder(NamedTuple):
+    oenc: str
     name: str
-    info: CodecInfo
     fmap: list[tuple[int, int]]
+    trans: list[int]
 
     @classmethod
     def create(cls, iroot: str, o_enc: str, name: str,
                i_enc: str = 'utf-8', ends: Seq[str] = ('.yuri',)):
-        assert (oinfo := search_function(o_enc)) is not None
-        flst = create_mapping(iroot, o_enc, i_enc, ends)
+        tlist = create_mapping(iroot, o_enc, i_enc, ends)
         trans = list(range(65536))
-        for fail, good in flst:
+        for fail, good in tlist:
             trans[fail] = good
-        func = CustomEncodeFunc(oinfo.encode, trans)
-        info = CodecInfo(func, notimpelemented, name=name)
-        return cls(name, info, flst)
-
-    def register(self):
-        return register_codec(self)
+        return cls(o_enc, name, tlist, trans)
 
     def write_mapbin(self, f: BinaryIO):
+        SGoodFail = Struct('<HH')
         for fail, good in self.fmap:
             f.write(SGoodFail.pack(good, fail))
 
-    def __call__(self, name: str):
-        if name == self.name:
-            return self.info
-        return None
+    def register(self):
+        try:
+            codecs.getencoder(self.name)
+        except LookupError:
+            myname = self.name
+            fenc = codecs.getencoder(self.oenc)
+            efun = EncodeFunc(fenc, self.trans)
+
+            def search(name: str):
+                if name == myname:
+                    return codecs.CodecInfo(efun, notImpl)
+            codecs.register(search)
+
+
+class EncodeFunc(NamedTuple):
+    fenc: Any
+    trans: list[int]
+
+    def __call__(self, s: str, e: str = 'strict') -> tuple[bytes, int]:
+        return self.fenc(s.translate(self.trans), e)
+
+
+def notImpl(s: Buffer, e: str = 'strict'):
+    raise NotImplemented

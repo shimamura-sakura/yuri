@@ -10,6 +10,7 @@ from multiprocessing import Pool
 from deflate import zlib_compress
 from os import walk, path, makedirs
 from xor_cipher import cyclic_xor_in_place
+from .util.custom_encoding import CustomEncoder
 __all__ = ['run', 'Typ', 'KEY_200', 'KEY_290']
 YURI_EXT = '.yuri'
 TLinks = list[tuple[list[int], int]]
@@ -19,26 +20,27 @@ THashCompULen = tuple[bytes, int]
 class ComCtx(NamedTuple):
     wroot: str
     iroot: str
-    custom_oenc: bool
     force_recompile: bool
     cdefs: dict[str, tuple[int, dict[str, int]]]
     cdict: dict[str, tuple[Typ, int]]
     gvar_typ: dict[str, Typ]
     ver: int
     i_enc: str
-    o_enc: str
+    o_enc: str | CustomEncoder
 
 
 def task_compile(arg: tuple[str, str, tuple[dict[str, Typ], bytes], ComCtx]) -> TCompile:
     filepath, _, (fvars, fghash), c = arg
+    if isinstance(c.o_enc, CustomEncoder):
+        c.o_enc.register()
+    oe_name = o_enc.name if (custom_oenc := isinstance(o_enc := c.o_enc, CustomEncoder)) else o_enc
     workpath = path.join(c.wroot, path.relpath(filepath, c.iroot))
     ycompath = workpath+'com'
     hashpath = workpath+'hash'
     with open(filepath, 'rb') as ft:
         itbytes = ft.read()
         text = str(itbytes, c.i_enc)
-        otbytes = (itbytes if c.o_enc == c.i_enc or not c.custom_oenc
-                   else bytes(text, c.o_enc))
+        otbytes = (itbytes if oe_name == c.i_enc or not custom_oenc else bytes(text, oe_name))
         txthash = sha256(otbytes).digest()
     try:
         with open(hashpath, 'rb') as fp:
@@ -51,7 +53,7 @@ def task_compile(arg: tuple[str, str, tuple[dict[str, Typ], bytes], ComCtx]) -> 
     print('compile', filepath)
     makedirs(path.dirname(workpath), exist_ok=True)
     mod = ast.parse(text, filepath)
-    res = compile_file(c.cdefs, c.cdict, c.gvar_typ, fvars, mod, c.ver, c.o_enc)
+    res = compile_file(c.cdefs, c.cdict, c.gvar_typ, fvars, mod, c.ver, oe_name)
     with open(ycompath, 'wb') as fp:
         pickle.dump(res, fp, pickle.HIGHEST_PROTOCOL)
     with open(hashpath, 'wb') as fp:
@@ -119,13 +121,14 @@ def run(
     o_ypf: str,  # output ypf path
     i_enc: str = 'utf-8',  # source encoding
     t_enc: str = CP932,  # encoding in troot files
-    o_enc: str = CP932,  # encoding in output files
+    o_enc: str | CustomEncoder = CP932,  # encoding in output files
     # SysVar:name -> Typ, idx, otherwise only __SysXXX is available
     cdict: dict[str, tuple[Typ, int]] | None = None,
-    mp_parallel: bool = True,
-    custom_oenc: bool = False,
-    force_recompile: bool = False,
+    mp_parallel: bool = True, force_recompile: bool = False,
 ):
+    if isinstance(o_enc, CustomEncoder):
+        o_enc.register()
+    oe_name = o_enc.name if isinstance(o_enc, CustomEncoder) else o_enc
     # template files: YSVR, YSCM, YSCFG, YSER
     with open(f'{troot}/ysv.ybn', 'rb') as fp:
         ysvr = YSVR.read(Rdr.from_bio(fp, t_enc))
@@ -160,9 +163,9 @@ def run(
                 case 'global': gfile_list.append(fullpath)
                 case 'global_f': ffile_list.append((dirpath, fullpath))
                 case _: source_list.append((dirpath, fullpath))
-    source_list.sort(key=lambda t: t[1].lower().encode(o_enc))
-    gfile_list.sort(key=lambda s: s.lower().encode(o_enc))
+    gfile_list.sort()
     ffile_list.sort()
+    source_list.sort()
     # parse global
     gvar_typ: dict[str, Typ] = {}
     gvar_defs: list[TVarDef] = []
@@ -193,8 +196,7 @@ def run(
     empty_fvars: dict[str, Typ] = {}
     empty_hashfg = sha256(pickle.dumps((gvar_typ, empty_fvars), pickle.HIGHEST_PROTOCOL))
     empty_pair = (empty_fvars, empty_hashfg.digest())
-    com_ctx = ComCtx(wroot, iroot, custom_oenc,
-                     force_recompile, cdefs, cdict, gvar_typ, ver, i_enc, o_enc)
+    com_ctx = ComCtx(wroot, iroot, force_recompile, cdefs, cdict, gvar_typ, ver, i_enc, o_enc)
     com_tasks = [(filepath, dirpath, fvars_typ.get(dirpath, empty_pair), com_ctx)
                  for dirpath, filepath in source_list]
     if mp_parallel:
@@ -274,10 +276,10 @@ def run(
         ypf_ents = [task_link(t) for t in link_tasks]
     # create YSVR, YSLB, YSTL, YSTD, add other files
     all_nvar = lvar_idx
-    YSLB.create(yslb_bio := BytesIO(), ver, all_lbls, o_enc)
-    YSTL(ver, all_scrs).write(ystl_bio := BytesIO(), o_enc)
+    YSLB.create(yslb_bio := BytesIO(), ver, all_lbls, oe_name)
+    YSTL(ver, all_scrs).write(ystl_bio := BytesIO(), oe_name)
     ystd_bin = YSTD(ver, all_nvar, sum_ntxt).tobytes()
-    ysvr.write(ysvr_bio := BytesIO(), o_enc)
+    ysvr.write(ysvr_bio := BytesIO(), oe_name)
     yslb_bin = yslb_bio.getvalue()
     ystl_bin = ystl_bio.getvalue()
     ysvr_bin = ysvr_bio.getvalue()
@@ -292,4 +294,4 @@ def run(
     ))
     # write YPF
     with open(o_ypf, 'wb') as fp:
-        ypf_make(ypf_ents, ver, fp, enc=o_enc)
+        ypf_make(ypf_ents, ver, fp, enc=oe_name)
