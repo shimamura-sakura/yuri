@@ -6,10 +6,14 @@ from typing import Sequence as Seq, NamedTuple, BinaryIO, Any
 __all__ = ['CustomEncoder']
 
 
+def raise_error(e: Exception):
+    raise e
+
+
 def create_mapping(idir: str, oenc: str, ienc: str, ends: Seq[str]):
     # map: fail -> good
     chars: set[str] = set()
-    for dirpath, _, filenames in walk(idir):
+    for dirpath, _, filenames in walk(idir, onerror=raise_error):
         for filename in filenames:
             for end in ends:
                 if filename.endswith(end):

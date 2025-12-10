@@ -17,6 +17,10 @@ TLinks = list[tuple[list[int], int]]
 THashCompULen = tuple[bytes, int]
 
 
+def raise_error(e: Exception):
+    raise e
+
+
 class ComCtx(NamedTuple):
     wroot: str
     iroot: str
@@ -152,7 +156,7 @@ def run(
     gfile_list: list[str] = []
     ffile_list: list[tuple[str, str]] = []
     source_list: list[tuple[str, str]] = []
-    for dirpath, _, filenames in walk(iroot):
+    for dirpath, _, filenames in walk(iroot, onerror=raise_error):
         for filename in filenames:
             basename = path.basename(filename)
             if not basename.endswith(YURI_EXT):
