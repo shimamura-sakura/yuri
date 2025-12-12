@@ -78,6 +78,8 @@ def read_ins(r: Rdr) -> TIns:
 
 def many_ins(r: Rdr) -> list[TIns]:
     l = len(r.b)
+    # if l > 0:
+    #     print(*map(hex, r.b))
     lst: list[TIns] = []
     while r.idx < l:
         lst.append(read_ins(r))

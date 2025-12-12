@@ -74,6 +74,7 @@ class RCmd:
         off = r.idx
         lno = rl.ui(4)
         c, na, npar = r.unpack(SCmdV300)
+        # print(c, na, npar)
         if c == codes.RETURNCODE:
             assert na == 1
             return cls(off, lno, c, [RArg.read(ra, None)], npar)
@@ -132,6 +133,10 @@ class YSTB:
         assert f.readinto(darg := bytearray(larg)) == larg  # type: ignore
         assert f.readinto(dexp := bytearray(lexp)) == lexp  # type: ignore
         assert f.readinto(dlno := bytearray(llno)) == llno  # type: ignore
+        # print('cmd', *map(hex, dcmd[0:16]))
+        # print('arg', *map(hex, darg[0:16]))
+        # print('exp', *map(hex, dexp[0:16]))
+        # print('lno', *map(hex, dlno[0:16]))
         cyclic_xor_in_place(dcmd, kbs)
         cyclic_xor_in_place(darg, kbs)
         cyclic_xor_in_place(dexp, kbs)
