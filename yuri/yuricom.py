@@ -129,6 +129,7 @@ def run(
     # SysVar:name -> Typ, idx, otherwise only __SysXXX is available
     cdict: dict[str, tuple[Typ, int]] | None = None,
     mp_parallel: bool = True, force_recompile: bool = False,
+    ypf_ver: int | None = None,
 ):
     if isinstance(o_enc, CustomEncoder):
         o_enc.register()
@@ -298,4 +299,4 @@ def run(
     ))
     # write YPF
     with open(o_ypf, 'wb') as fp:
-        ypf_make(ypf_ents, ver, fp, enc=oe_name)
+        ypf_make(ypf_ents, ypf_ver or ver, fp, enc=oe_name)
