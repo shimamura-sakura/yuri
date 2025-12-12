@@ -1,5 +1,4 @@
 from .common import *
-from json import dumps
 from enum import nonmember
 from collections.abc import Buffer, Sized
 
@@ -100,6 +99,9 @@ def ins_tob(ins: TIns, e: str):
         case (v, tyq, idx): return v.to_bytes(3, LE)+STyqIdx.pack(tyq, idx)
 
 
+STRV_TRANS = {ord('\\'): '\\\\'}
+
+
 class Ins:
     to_b = staticmethod(ins_tob)
     read = staticmethod(read_ins)
@@ -117,4 +119,31 @@ class Ins:
 
     @staticmethod
     def strv(s: str):
-        return dumps(s, ensure_ascii=False)
+        # Python str to Yu-Ris str
+        assert not ('"' in s and "'" in s)
+        if '"' in s:
+            res = f"'{s.translate(STRV_TRANS)}'"
+        else:
+            res = f'"{s.translate(STRV_TRANS)}"'
+        assert Ins.pstr(res) == s
+        return res
+
+    @staticmethod
+    def pstr(s: str):
+        assert s[0] == s[-1]
+        in_esc = False
+        chars: list[str] = []
+        for c in s[1:-1]:
+            if in_esc:
+                in_esc = False
+                match c:
+                    case '\\': chars.append('\\')
+                    case _: assert False, s
+            else:
+                if c == '\\':
+                    in_esc = True
+                else:
+                    chars.append(c)
+        if in_esc:
+            chars.append('\\')
+        return ''.join(chars)

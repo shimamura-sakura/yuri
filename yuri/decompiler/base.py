@@ -144,9 +144,7 @@ class YDecBase(ABC):
                     if lit_str:
                         stk.append(ast.Name(s))
                     else:
-                        s = s[1:-1].replace(R'\\', '\\')
-                        s = s.replace(R'\n', '\n').replace(R'\t', '\t')
-                        stk.append(ast.Constant(s))
+                        stk.append(ast.Constant(Ins.pstr(s)))
                 case (IOpA(), v): stk.append(ast.Constant(v))
                 case (IOpV(opv), tyq, idx):
                     match opv:
