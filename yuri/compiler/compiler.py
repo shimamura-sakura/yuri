@@ -65,6 +65,11 @@ def compile_file(
             case _: assert False, f'unknown suffix {suf}: {ast.unparse(var)}'
         assert (typ != Typ.Str) == num, f'ref {name}: suffix {suf}, but type {typ.name}'
         into.append((ins, tyq, idx))
+        match suf:
+            case 'N' | 'S': pass
+            case 'AN': typ = Typ.Int
+            case 'AS': typ = Typ.Int
+            case 'SN': typ = Typ.Str  # int as str
         return typ
 
     def do_expr(expr: ast.expr, into: list[TIns]) -> Typ:
