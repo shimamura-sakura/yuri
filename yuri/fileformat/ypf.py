@@ -86,7 +86,6 @@ def read(f: BinIO, *, v: int | None = None, enc: str = 'cp932',
     mag, v_, n, l, pad = cast(TYpfHead, SYpfHead.unpack(f.read(32)))
     assert mag == YpfMagic, f'not YPF magic: {mag}'
     assert pad == YpfPad16, f'nonzero in padding: {pad}'
-    print(v_)
     assert (v := v or v_) in VerRange, f'unsupported version: {v}'
     assert (l := l-32 if v >= 300 else l) >= 0, f'wrong version ?'
     assert (g := len(d := f.read(l))) == l, f'ents: want {l}, got {g}'
