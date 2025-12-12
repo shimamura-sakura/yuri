@@ -15,13 +15,15 @@ class DecCtx(NamedTuple):
     ext: str
     oenc: str
     dump: bool
+    key: int | None
+    ver: int | None
 
 
 def task_decompile(arg: tuple[int, str, str, str, DecCtx]):
     iscr, scrpath, ybnpath, opath, ctx = arg
     print(iscr, scrpath)
     with open(ybnpath, 'rb') as fp:
-        ystb = YSTB.read(fp, ctx.cmdcodes, enc=ctx.ienc)
+        ystb = YSTB.read(fp, ctx.cmdcodes, enc=ctx.ienc, v=ctx.ver, key=ctx.key)
     if ctx.dump:
         with open(opath+'.dump', 'w', encoding='utf-8') as fp:
             ystb.print(ctx.cmds, fp)
@@ -37,16 +39,17 @@ def run(
     oenc: str | None = None,
     yscd: YSCD | None = None,
     dcls: type[YDecBase] = YDecYuris,
-    mp_parallel: bool = True, also_dump: bool = False
+    mp_parallel: bool = True, also_dump: bool = False,
+    key: int | None = None, ver: int | None = None
 ):
     with open(f'{iroot}/ysc.ybn', 'rb') as fp:
-        yscm = YSCM.read(Rdr.from_bio(fp, ienc))
+        yscm = YSCM.read(Rdr.from_bio(fp, ienc), v=ver)
     with open(f'{iroot}/ysv.ybn', 'rb') as fp:
-        ysvr = YSVR.read(Rdr.from_bio(fp, ienc))
+        ysvr = YSVR.read(Rdr.from_bio(fp, ienc), v=ver)
     with open(f'{iroot}/ysl.ybn', 'rb') as fp:
-        yslb = YSLB.read(Rdr.from_bio(fp, ienc))
+        yslb = YSLB.read(Rdr.from_bio(fp, ienc), v=ver)
     with open(f'{iroot}/yst_list.ybn', 'rb') as fp:
-        ystl = YSTL.read(Rdr.from_bio(fp, ienc))
+        ystl = YSTL.read(Rdr.from_bio(fp, ienc), v=ver)
     ydec = dcls(yscm, ysvr, yslb, yscd)
     tasklist: list[tuple[int, str, str, str, DecCtx]] = []
     oenc = oenc or dcls.DefaultEnc
@@ -65,7 +68,7 @@ def run(
         else:
             ybnpath = f'{iroot}/yst{scr.iscr:0>5}.ybn'
             ctx = DecCtx(yscm.cmdcodes, yscm.cmds, ydec, ienc, opath,
-                         dcls.ExtraExt, oenc, also_dump)
+                         dcls.ExtraExt, oenc, also_dump, key, ver)
             tasklist.append((scr.iscr, scr.path, ybnpath, opath, ctx))
     if mp_parallel:
         with Pool() as pool:
