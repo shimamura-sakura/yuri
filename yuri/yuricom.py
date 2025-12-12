@@ -168,9 +168,9 @@ def run(
                 case 'global': gfile_list.append(fullpath)
                 case 'global_f': ffile_list.append((dirpath, fullpath))
                 case _: source_list.append((dirpath, fullpath))
-    gfile_list.sort()
-    ffile_list.sort()
-    source_list.sort()
+    gfile_list.sort(key=lambda s: s.lower().encode(oe_name))
+    ffile_list.sort(key=lambda s: s[1].lower().encode(oe_name))
+    source_list.sort(key=lambda s: s[1].lower().encode(oe_name))
     # parse global
     gvar_typ: dict[str, Typ] = {}
     gvar_defs: list[TVarDef] = []
@@ -249,7 +249,7 @@ def run(
         fvar_dic = fvar_dics.get(dirpath, empty_fvardic)
         ntxt, nsvar, nlvar, lbls, syms, asm = res
         relpath = path.relpath(filepath, iroot).removesuffix('.yuri')
-        all_scrs.append(Scr(iscr, relpath, 0, nlvar+nsvar, len(lbls), ntxt))
+        all_scrs.append(Scr(iscr, relpath.replace('/', '\\'), 0, nlvar+nsvar, len(lbls), ntxt))
         all_lbls.extend(Lbl(name, pos, iscr, if_lv, loop_lv) for pos, name, if_lv, loop_lv in lbls)
         sym_vidxs: TLinks = []
         for sym in syms:
@@ -282,7 +282,8 @@ def run(
     # create YSVR, YSLB, YSTL, YSTD, add other files
     all_nvar = lvar_idx
     YSLB.create(yslb_bio := BytesIO(), ver, all_lbls, oe_name)
-    YSTL(ver, all_scrs).write(ystl_bio := BytesIO(), oe_name)
+    ystl = YSTL(ver, all_scrs)
+    ystl.write(ystl_bio := BytesIO(), oe_name)
     ystd_bin = YSTD(ver, all_nvar, sum_ntxt).tobytes()
     ysvr.write(ysvr_bio := BytesIO(), oe_name)
     yslb_bin = yslb_bio.getvalue()
