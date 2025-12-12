@@ -57,5 +57,5 @@ class YSTL:
             wfn(s, f, enc)
 
     def print(self, f: TextIO = stdout):
-        f.write(f'YSTL ver={self.ver} nscr={len(self.scrs)}')
+        f.write(f'YSTL ver={self.ver} nscr={len(self.scrs)}\n')
         f.writelines(f'[{i}] {l}\n' for i, l in enumerate(self.scrs))

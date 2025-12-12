@@ -147,7 +147,7 @@ class YSTB:
         cmds = [RCmd.readV300(rc, ra, rl, dexp, codes) for _ in range(ncmd)]
         return cls(v, key, cmds, codes)
 
-    def print(self, cmds: Seq[MCmd], f: TextIO = stdout):
+    def print(self, cmds: Seq[MCmd], f: TextIO = stdout, show_idx: bool = True):
         kcc = self.codes
         f.write(f'YSTB ver={self.ver} key={self.key:0>8x} ncmd={len(self.cmds)}\n')
         for i, cmd in enumerate(self.cmds):
@@ -155,6 +155,8 @@ class YSTB:
             args = cmd.args
             desc = cmds[cmd.code]
             darg = desc.args
+            if not show_idx:
+                i = '-'
             f.write(f'[{i}] off={cmd.off} lno={cmd.lno} npar={cmd.npar} {code}:{desc.name}\n')
             match code:
                 case kcc.IF | kcc.ELSE if len(args) == 3:
