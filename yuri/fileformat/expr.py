@@ -108,6 +108,16 @@ class Ins:
     read_many = staticmethod(many_ins)
 
     @staticmethod
+    def escape_str(s: str):
+        segs: list[str] = []
+        for i, c in enumerate(s):
+            if c == '\\' and i < len(s)-1:
+                segs.append('\\\\')
+            else:
+                segs.append(c)
+        return ''.join(segs)
+
+    @staticmethod
     def intv(i: int):
         if -0x80 <= i <= 0x7F:
             return (IOpA.I8, i)
@@ -122,14 +132,14 @@ class Ins:
         # Python str to Yu-Ris str
         assert not ('"' in s and "'" in s)
         if '"' in s:
-            res = f"'{s.translate(STRV_TRANS)}'"
+            res = f"'{Ins.escape_str(s)}'"
         else:
-            res = f'"{s.translate(STRV_TRANS)}"'
-        assert Ins.pstr(res) == s
+            res = f'"{Ins.escape_str(s)}"'
+        assert Ins.ins_to_pstr(res) == s
         return res
 
     @staticmethod
-    def pstr(s: str):
+    def ins_to_pstr(s: str):
         assert s[0] == s[-1]
         in_esc = False
         chars: list[str] = []
