@@ -42,14 +42,24 @@ def run(
     mp_parallel: bool = True, also_dump: bool = False,
     key: int | None = None, ver: int | None = None
 ):
-    with open(f'{iroot}/ysc.ybn', 'rb') as fp:
+    with open(path.join(iroot, 'ysc.ybn'), 'rb') as fp:
         yscm = YSCM.read(Rdr.from_bio(fp, ienc), v=ver)
-    with open(f'{iroot}/ysv.ybn', 'rb') as fp:
+    with open(path.join(iroot, 'ysv.ybn'), 'rb') as fp:
         ysvr = YSVR.read(Rdr.from_bio(fp, ienc), v=ver)
-    with open(f'{iroot}/ysl.ybn', 'rb') as fp:
+    with open(path.join(iroot, 'ysl.ybn'), 'rb') as fp:
         yslb = YSLB.read(Rdr.from_bio(fp, ienc), v=ver)
-    with open(f'{iroot}/yst_list.ybn', 'rb') as fp:
+    with open(path.join(iroot, 'yst_list.ybn'), 'rb') as fp:
         ystl = YSTL.read(Rdr.from_bio(fp, ienc), v=ver)
+    makedirs(oroot, exist_ok=True)
+    if also_dump:
+        with open(path.join(oroot, 'ysc.ybn.dump'), 'w', encoding=oenc) as fp:
+            yscm.print(fp)
+        with open(path.join(oroot, 'ysv.ybn.dump'), 'w', encoding=oenc) as fp:
+            ysvr.print(fp)
+        with open(path.join(oroot, 'ysl.ybn.dump'), 'w', encoding=oenc) as fp:
+            yslb.print(fp)
+        with open(path.join(oroot, 'yst_list.ybn.dump'), 'w', encoding=oenc) as fp:
+            ystl.print(fp)
     ydec = dcls(yscm, ysvr, yslb, yscd)
     tasklist: list[tuple[int, str, str, str, DecCtx]] = []
     oenc = oenc or dcls.DefaultEnc
