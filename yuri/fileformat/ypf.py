@@ -52,7 +52,7 @@ def ent_64b(f: BinIO) -> TEnt: return SEnt_64B.unpack(f.read(22))
 
 
 def ver_hash(v: int, h: THashFn | None = None):
-    if v >= 477: # real number ?
+    if v >= 477:  # real number ?
         h = h or hashMMH
     elif v >= 265:
         # 476: Natsuzora Asterism Trial - CRC32
@@ -66,7 +66,7 @@ def ver_consts(v: int,
                nl_map: bytes | None = None, nb_xor: bytes | None = None,
                h_name: THashFn | None = None, h_file: THashFn | None = None):
     h_name = ver_hash(v, h_name)
-    if v >= 477: # real number ?
+    if v >= 477:  # real number ?
         # 476: Natsuzora Asterism Trial - CRC32
         f_ent = ent_64b
         s_ent = SEnt_64B
@@ -82,7 +82,8 @@ def ver_consts(v: int,
 
 def read(f: BinIO, *, v: int | None = None, enc: str = 'cp932',
          nl_map: bytes | None = None, nb_xor: bytes | None = None,
-         h_name: THashFn | None = None, h_file: THashFn | None = None, log: TextIO | None = None):
+         h_name: THashFn | None = None, h_file: THashFn | None = None,
+         log: TextIO | None = None, do_decompress: bool = True):
     mag, v_, n, l, pad = cast(TYpfHead, SYpfHead.unpack(f.read(32)))
     assert mag == YpfMagic, f'not YPF magic: {mag}'
     assert pad == YpfPad16, f'nonzero in padding: {pad}'
@@ -102,7 +103,10 @@ def read(f: BinIO, *, v: int | None = None, enc: str = 'cp932',
         assert c <= 1, f'unknown compression {c}, file: {name}'
         assert (g := len(d := f.read(cl))) == cl, f'file: want {cl}, got {g}, file: {name}'
         assert (h := h_file(d, fh)) is None, f'hash(file): expect {fh:0>8x}, actual {h:0>8x}, file: {name}'
-        assert (g := len(d := decompress(d, ul) if c else d)) == ul, f'comp: want {ul}, got {g}, file: {name}'
+        if do_decompress:
+            assert (g := len(d := decompress(d, ul) if c else d)) == ul, f'comp: want {ul}, got {g}, file: {name}'
+        elif c != 0:
+            c = -1
         ents.append((name, k, c, d, ul))
         _ = log and log.write(f'k={k} c={c} ul={ul:<7} cl={cl:<7} file: {name}\n')
     return ents, v
