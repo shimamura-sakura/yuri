@@ -36,12 +36,12 @@ class RArg:
     dat: None | str | list[TIns]
 
     @classmethod
-    def read(cls, r: Rdr, dat: bytes | None = None, word: bool = False):
+    def read(cls, r: Rdr, word_enc: str, dat: bytes | None = None, word: bool = False):
         da = None
         id_, typ, aop, siz, off = r.unpack(SArg)
         if dat is not None:
             assert len(dat := dat[off:off+siz]) == siz
-            da = str(dat, r.enc) if word else many_ins(Rdr(dat, r.enc))
+            da = str(dat, word_enc) if word else many_ins(Rdr(dat, r.enc))
         # YSCom used some uninitialized value for typ in var defs
         return cls(id_, Typ(typ & 0b11), AOp(aop), siz, off, da)
 
@@ -61,40 +61,40 @@ class RCmd:
     npar: int  # V3xx: parameter count for GOSUB, RETURN
 
     @classmethod
-    def readV2xx(cls, r: Rdr, dat: bytes, v: int, codes: CmdCodes):
+    def readV2xx(cls, r: Rdr, dat: bytes, v: int, codes: CmdCodes, word_enc: str):
         off = r.idx
         c, na, lno = r.unpack(SCmdV200)
         if c == codes.RETURNCODE:
             assert na == 1
             return cls(off, lno, c, [RArg.readV2xxR(r, v == 290)], 0)
-        return cls(off, lno, c, cls._readArgs(r, na, dat, c, codes), 0)
+        return cls(off, lno, c, cls._readArgs(r, na, dat, c, codes, word_enc), 0)
 
     @classmethod
-    def readV300(cls, r: Rdr, ra: Rdr, rl: Rdr, dat: bytes, codes: CmdCodes):
+    def readV300(cls, r: Rdr, ra: Rdr, rl: Rdr, dat: bytes, codes: CmdCodes, word_enc: str):
         off = r.idx
         lno = rl.ui(4)
         c, na, npar = r.unpack(SCmdV300)
         # print(c, na, npar)
         if c == codes.RETURNCODE:
             assert na == 1
-            return cls(off, lno, c, [RArg.read(ra, None)], npar)
-        return cls(off, lno, c, cls._readArgs(ra, na, dat, c, codes), npar)
+            return cls(off, lno, c, [RArg.read(ra, word_enc, None)], npar)
+        return cls(off, lno, c, cls._readArgs(ra, na, dat, c, codes, word_enc), npar)
 
     @staticmethod
-    def _readArgs(ra: Rdr, na: int, dat: bytes, c: int, codes: CmdCodes) -> list[RArg]:
+    def _readArgs(ra: Rdr, na: int, dat: bytes, c: int, codes: CmdCodes, word_enc: str) -> list[RArg]:
         match c:
             case codes.IF | codes.ELSE if na == 3:
-                return [RArg.read(ra, dat), RArg.read(ra), RArg.read(ra)]
+                return [RArg.read(ra, word_enc, dat), RArg.read(ra, word_enc), RArg.read(ra, word_enc)]
             case codes.ELSE:
                 assert na == 0
                 return []
             case codes.LOOP:
                 assert na == 2
-                return [RArg.read(ra, dat), RArg.read(ra)]
+                return [RArg.read(ra, word_enc, dat), RArg.read(ra, word_enc)]
             case codes.WORD:
                 assert na == 1
-                return [RArg.read(ra, dat, True)]
-            case _: return [RArg.read(ra, dat) for _ in range(na)]
+                return [RArg.read(ra, word_enc, dat, True)]
+            case _: return [RArg.read(ra, word_enc, dat) for _ in range(na)]
 
 
 @dataclass(slots=True)
@@ -105,12 +105,13 @@ class YSTB:
     codes: CmdCodes
 
     @classmethod
-    def read(cls, f: BinIO, codes: CmdCodes, *,
-             key: int | None = None, v: int | None = None, enc: str = CP932):
+    def read(cls, f: BinIO, codes: CmdCodes, *, key: int | None = None,
+             v: int | None = None, enc: str = CP932, word_enc: str | None = None):
         mag, v_, *rest = cast(Ints, SYstbHead.unpack(f.read(32)))
         assert mag == YstbMagic, f'not YSTB magic: {mag}'
         assert (v := v or v_) in VerRange, f'unsupported version: {v}'
         key = (KEY_290 if v >= 290 else KEY_200) if key is None else key
+        word_enc = word_enc or enc
         kbs = key.to_bytes(4)
         if v < 300:
             lcmd, lexp, exp_off, *pads = rest
@@ -123,7 +124,7 @@ class YSTB:
             rc = Rdr(dcmd, enc)
             cmds: list[RCmd] = []
             while rc.idx < lcmd:
-                cmds.append(RCmd.readV2xx(rc, dexp, v, codes))
+                cmds.append(RCmd.readV2xx(rc, dexp, v, codes, word_enc))
             return cls(v, key, cmds, codes)
         ncmd, lcmd, larg, lexp, llno, pad = rest
         assert ncmd * 4 == lcmd == llno
@@ -144,7 +145,7 @@ class YSTB:
         rc = Rdr(dcmd, enc)
         ra = Rdr(darg, enc)
         rl = Rdr(dlno, enc)
-        cmds = [RCmd.readV300(rc, ra, rl, dexp, codes) for _ in range(ncmd)]
+        cmds = [RCmd.readV300(rc, ra, rl, dexp, codes, word_enc) for _ in range(ncmd)]
         return cls(v, key, cmds, codes)
 
     def print(self, cmds: Seq[MCmd], f: TextIO = stdout, show_idx: bool = True):

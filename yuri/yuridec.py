@@ -17,13 +17,14 @@ class DecCtx(NamedTuple):
     dump: bool
     key: int | None
     ver: int | None
+    word_enc: str | None
 
 
 def task_decompile(arg: tuple[int, str, str, str, DecCtx]):
     iscr, scrpath, ybnpath, opath, ctx = arg
     print(iscr, scrpath)
     with open(ybnpath, 'rb') as fp:
-        ystb = YSTB.read(fp, ctx.cmdcodes, enc=ctx.ienc, v=ctx.ver, key=ctx.key)
+        ystb = YSTB.read(fp, ctx.cmdcodes, enc=ctx.ienc, v=ctx.ver, key=ctx.key, word_enc=ctx.word_enc)
     if ctx.dump:
         with open(opath+'.dump', 'w', encoding='utf-8') as fp:
             ystb.print(ctx.cmds, fp)
@@ -40,7 +41,8 @@ def run(
     yscd: YSCD | None = None,
     dcls: type[YDecBase] = YDecYuris,
     mp_parallel: bool = True, also_dump: bool = False,
-    key: int | None = None, ver: int | None = None
+    key: int | None = None, ver: int | None = None,
+    word_enc: str | None = None,
 ):
     with open(path.join(iroot, 'ysc.ybn'), 'rb') as fp:
         yscm = YSCM.read(Rdr.from_bio(fp, ienc), v=ver)
@@ -78,7 +80,7 @@ def run(
         else:
             ybnpath = f'{iroot}/yst{scr.iscr:0>5}.ybn'
             ctx = DecCtx(yscm.cmdcodes, yscm.cmds, ydec, ienc, opath,
-                         dcls.ExtraExt, oenc, also_dump, key, ver)
+                         dcls.ExtraExt, oenc, also_dump, key, ver, word_enc)
             tasklist.append((scr.iscr, scr.path, ybnpath, opath, ctx))
     if mp_parallel:
         with Pool() as pool:
