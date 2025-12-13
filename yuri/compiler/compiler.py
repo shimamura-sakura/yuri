@@ -12,12 +12,34 @@ TCompile = tuple[int, int, int, list[tuple[int, str, int, int]],
                  list[ESym | LSym | SSym], TAsmV200 | TAsmV300]
 
 
+@dataclass(slots=True)
+class ComOpts:
+    opt_v555_npar: bool = False  # For: Yuri Love Slave
+
+
+def v555_npar(kwargs: dict[str, Arg]):
+    ni, ns, nf = 0, 0, 0
+    for kw in kwargs:
+        if 'INT' in kw:
+            k = kw.rpartition('INT')[2]
+            ni = max(ni, int(k) if k.isnumeric() else 1)
+        elif 'STR' in kw:
+            k = kw.rpartition('STR')[2]
+            ns = max(ns, int(k) if k.isnumeric() else 1)
+        elif 'FLT' in kw:
+            k = kw.rpartition('FLT')[2]
+            nf = max(nf, int(k) if k.isnumeric() else 1)
+        else:
+            assert kw == 'LBL'
+    return ((nf & 0b11) << 14)+(ns << 9)+(ni << 3)+(nf >> 2)
+
+
 def compile_file(
         cdefs: dict[str, tuple[int, dict[str, int]]],
         cvars: dict[str, tuple[Typ, int]],
         gvars: dict[str, Typ],
         fvars: dict[str, Typ],
-        module: ast.Module, ver: int, enc: str) -> TCompile:
+        module: ast.Module, ver: int, enc: str, opts: ComOpts) -> TCompile:
     cmds: list[Cmd] = []
     syms: list[LSym | ESym | SSym] = []
     lbls: dict[str, tuple[Cmd, int, int]] = {}
@@ -37,6 +59,8 @@ def compile_file(
             case 'RETURN': npar = len(kwargs)
             case 'GOSUB': npar = len(kwargs)-1
             case _: npar = 0
+        if opts.opt_v555_npar and cmd in ('RETURN', 'GOSUB'):
+            npar = v555_npar(kwargs)
         cmds.append(c := Cmd(code, alist, len(cmds)+1, npar))
         return c
 

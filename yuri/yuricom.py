@@ -31,6 +31,7 @@ class ComCtx(NamedTuple):
     ver: int
     i_enc: str
     o_enc: str | CustomEncoder
+    opts: ComOpts
 
 
 def task_compile(arg: tuple[str, str, tuple[dict[str, Typ], bytes], ComCtx]) -> TCompile:
@@ -57,7 +58,7 @@ def task_compile(arg: tuple[str, str, tuple[dict[str, Typ], bytes], ComCtx]) -> 
     print('compile', filepath)
     makedirs(path.dirname(workpath), exist_ok=True)
     mod = ast.parse(text, filepath)
-    res = compile_file(c.cdefs, c.cdict, c.gvar_typ, fvars, mod, c.ver, oe_name)
+    res = compile_file(c.cdefs, c.cdict, c.gvar_typ, fvars, mod, c.ver, oe_name, c.opts)
     with open(ycompath, 'wb') as fp:
         pickle.dump(res, fp, pickle.HIGHEST_PROTOCOL)
     with open(hashpath, 'wb') as fp:
@@ -129,7 +130,7 @@ def run(
     # SysVar:name -> Typ, idx, otherwise only __SysXXX is available
     cdict: dict[str, tuple[Typ, int]] | None = None,
     mp_parallel: bool = True, force_recompile: bool = False,
-    ypf_ver: int | None = None,
+    ypf_ver: int | None = None, opts: ComOpts = ComOpts()
 ):
     if isinstance(o_enc, CustomEncoder):
         o_enc.register()
@@ -201,7 +202,7 @@ def run(
     empty_fvars: dict[str, Typ] = {}
     empty_hashfg = sha256(pickle.dumps((gvar_typ, empty_fvars), pickle.HIGHEST_PROTOCOL))
     empty_pair = (empty_fvars, empty_hashfg.digest())
-    com_ctx = ComCtx(wroot, iroot, force_recompile, cdefs, cdict, gvar_typ, ver, i_enc, o_enc)
+    com_ctx = ComCtx(wroot, iroot, force_recompile, cdefs, cdict, gvar_typ, ver, i_enc, o_enc, opts)
     com_tasks = [(filepath, dirpath, fvars_typ.get(dirpath, empty_pair), com_ctx)
                  for dirpath, filepath in source_list]
     if mp_parallel:
