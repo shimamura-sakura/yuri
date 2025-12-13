@@ -83,7 +83,7 @@ def compile_file(
                         into.append((IOpA.F64, f))
                         return Typ.Flt
                     case str(s):
-                        into.append(Ins.strv(s))
+                        into.append(Ins.pstr_to_ins(s))
                         return Typ.Str
                     case None: return Typ.Int  # bad expr
                     case _: assert False, f'unsupported literal: {ast.unparse(expr)}'

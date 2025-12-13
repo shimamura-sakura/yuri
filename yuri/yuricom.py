@@ -221,7 +221,7 @@ def run(
             case (name, sex, dims, Typ.Flt, f):
                 init = (Typ.Flt, float(f))
             case (name, sex, dims, Typ.Str, s):
-                init = (Typ.Str, () if len(s) == 0 else (Ins.strv(s),))
+                init = (Typ.Str, () if len(s) == 0 else (Ins.pstr_to_ins(s),))
         ivar = len(var_list)
         gvar_dic[name] = ivar
         var_list.append(Var(VScope.G, sex, 0, ivar, dims, init))
@@ -234,7 +234,7 @@ def run(
                 case (name, sex, dims, Typ.Flt, f):
                     init = (Typ.Flt, float(f))
                 case (name, sex, dims, Typ.Str, s):
-                    init = (Typ.Str, () if len(s) == 0 else (Ins.strv(s),))
+                    init = (Typ.Str, () if len(s) == 0 else (Ins.pstr_to_ins(s),))
             ivar = len(var_list)
             fvar_dic[name] = ivar
             var_list.append(Var(VScope.F, sex, 0, ivar, dims, init))
@@ -267,7 +267,7 @@ def run(
                         case (name, sex, dims, Typ.Flt, f):
                             init = (Typ.Flt, float(f))
                         case (name, sex, dims, Typ.Str, s):
-                            init = (Typ.Str, () if len(s) == 0 else (Ins.strv(s),))
+                            init = (Typ.Str, () if len(s) == 0 else (Ins.pstr_to_ins(s),))
                     ivar = len(var_list)
                     sym_vidxs.append((eoffs, ivar))
                     var_list.append(Var(VScope.S, sex, iscr, ivar, dims, init))

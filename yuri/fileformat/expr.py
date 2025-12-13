@@ -128,7 +128,7 @@ class Ins:
         return (IOpA.I64, i)
 
     @staticmethod
-    def strv(s: str):
+    def pstr_to_ins(s: str):
         # Python str to Yu-Ris str
         assert not ('"' in s and "'" in s)
         if '"' in s:
