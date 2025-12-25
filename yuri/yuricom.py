@@ -176,6 +176,7 @@ def run(
     gvar_typ: dict[str, Typ] = {}
     gvar_defs: list[TVarDef] = []
     for gfilepath in gfile_list:
+        print(gfilepath)
         with open(gfilepath, 'r', encoding=i_enc) as ft:
             text = ft.read()
         mod = ast.parse(text, gfilepath)
@@ -188,6 +189,7 @@ def run(
     fvar_defs: list[tuple[str, list[TVarDef]]] = []
     fvars_typ: dict[str, tuple[dict[str, Typ], bytes]] = {}
     for fdrpath, ffilepath in ffile_list:
+        print(ffilepath)
         with open(ffilepath, 'r', encoding=i_enc) as ft:
             text = ft.read()
         mod = ast.parse(text, ffilepath)
