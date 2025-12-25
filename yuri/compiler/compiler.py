@@ -47,8 +47,10 @@ def compile_file(
     lvars: dict[str, tuple[Typ, int]] = {}  # local vars - allow redefinition
     erefs: dict[str, tuple[Typ, int]] = {}  # reference to c/g/f vars
     ntxt, nsvar, nlvar, if_lv, loop_lv = 0, 0, 0, 0, 0
+    last_lno: int = 0
 
-    def add_cmd(cmd: str, *args: Arg, **kwargs: Arg) -> Cmd:
+    def add_cmd(lno: int, cmd: str, *args: Arg, **kwargs: Arg) -> Cmd:
+        nonlocal last_lno
         alist: list[Arg] = []
         code, adefs = cdefs[cmd]
         for kw, arg in kwargs.items():
@@ -61,7 +63,10 @@ def compile_file(
             case _: npar = 0
         if opts.opt_v555_npar and cmd in ('RETURN', 'GOSUB'):
             npar = v555_npar(kwargs)
-        cmds.append(c := Cmd(code, alist, len(cmds)+1, npar))
+        if lno < 0:
+            lno = last_lno
+        cmds.append(c := Cmd(code, alist, lno, npar))
+        last_lno = lno
         return c
 
     def add_lbl(lbl: str):
@@ -203,36 +208,38 @@ def compile_file(
             nlvar += 1
             lvars[name] = (typ, len(syms)+VMinUsr)  # L def
             syms.append(([], sco))
-        add_cmd(cmd, Arg(0, do_expr(var, ins := []), 0, ins), Arg(0, do_expr(inite, ins := []), 0, ins))
+        add_cmd(stmt.lineno,
+                cmd, Arg(0, do_expr(var, ins := []), 0, ins), Arg(0, do_expr(inite, ins := []), 0, ins))
 
     def do_stmt(stmt: ast.stmt):
         nonlocal ntxt, if_lv, loop_lv
+        lno = stmt.lineno
         match stmt:
             case ast.Pass(): pass
             case ast.If(test, body, orelse):
                 if_lv += 1
-                add_cmd('IF', Arg(0, do_expr(test, ins := []), 0, ins),
+                add_cmd(lno, 'IF', Arg(0, do_expr(test, ins := []), 0, ins),
                         ela := Arg(0, 0, 0, None), ifend := Arg(0, 0, 0, None))
                 elifs, last_else = do_elif_chain(orelse)
                 do_stmt_list(body)
                 for test, body in elifs:
-                    add_cmd('IFBLEND')
-                    ela.dat = add_cmd('ELSE', Arg(0, do_expr(test, ins := []), 0, ins),
+                    add_cmd(-1, 'IFBLEND')
+                    ela.dat = add_cmd(-1, 'ELSE', Arg(0, do_expr(test, ins := []), 0, ins),
                                       nela := Arg(0, 0, 0, ()), Arg(0, 0, 0, ()))
                     ela = nela
                     do_stmt_list(body)
                 if len(last_else):
-                    add_cmd('IFBLEND')
-                    ela.dat = add_cmd('ELSE')
+                    add_cmd(-1, 'IFBLEND')
+                    ela.dat = add_cmd(-1, 'ELSE')
                     do_stmt_list(last_else)
-                ifend.dat = add_cmd('IFEND')
+                ifend.dat = add_cmd(-1, 'IFEND')
                 if_lv -= 1
             case ast.While(test, body):  # TODO: literal -1
                 loop_lv += 1
-                add_cmd('LOOP', Arg(0, do_expr(test, ins := []), 0, ins),
+                add_cmd(lno, 'LOOP', Arg(0, do_expr(test, ins := []), 0, ins),
                         loopend := Arg(0, 0, 0, None))
                 do_stmt_list(body)
-                loopend.dat = add_cmd('LOOPEND')
+                loopend.dat = add_cmd(-1, 'LOOPEND')
                 loop_lv -= 1
             case ast.With([ast.withitem(ast.Call(ast.Name(cmd), [], kwlist))], body):
                 kwargs: dict[str, Arg] = {}
@@ -252,24 +259,24 @@ def compile_file(
                         case _: assert False, f'must be an ?= assign: {ast.unparse(kwaug)}'
                 for kw, arg in kwargs.items():
                     assert arg is not None, f'no assign for {kw}: {ast.unparse(stmt)}'
-                add_cmd(cmd, **kwargs)
+                add_cmd(lno, cmd, **kwargs)
             case ast.Expr(expr):
                 match expr:
                     case ast.Constant(str(s)):
-                        add_cmd('WORD', Arg(0, 0, 0, s))
+                        add_cmd(lno, 'WORD', Arg(0, 0, 0, s))
                     case ast.Yield(ast.Constant(int(retcode))):
                         ntxt += 1
-                        add_cmd('RETURNCODE', Arg(ntxt, 0, 0, retcode))
+                        add_cmd(lno, 'RETURNCODE', Arg(ntxt, 0, 0, retcode))
                     case ast.Call(ast.Name(cmd), [], kwlist):
                         kwargs: dict[str, Arg] = {}
                         for kwitem in kwlist:
                             kw = cast(str, kwitem.arg)
                             assert kw not in kwargs, f'{kw} already set: {ast.unparse(stmt)}'
                             kwargs[kw] = Arg(0, do_expr(kwitem.value, ins := []), 0, ins)
-                        add_cmd(cmd, **kwargs)
+                        add_cmd(lno, cmd, **kwargs)
                     case ast.Subscript(ast.Name(cmd), var):
                         if cmd == '_':
-                            add_cmd(cmd, Arg(0, do_expr(var, ins := []), 0, ins))
+                            add_cmd(lno, cmd, Arg(0, do_expr(var, ins := []), 0, ins))
                             return
                         assert cmd in DefVarCmd, ast.unparse(stmt)
                         do_defvar(stmt, cmd, var, None)
@@ -285,14 +292,14 @@ def compile_file(
                             assert cmd in DefVarCmd, ast.unparse(stmt)
                             return do_defvar(stmt, cmd, var, rhs)
                     case var: pass
-                add_cmd('LET',
+                add_cmd(lno, 'LET',
                         Arg(0, do_expr(var, ins := []), 0, ins),
                         Arg(0, do_expr(rhs, ins := []), 0, ins))
             case ast.AugAssign(lhs, op, rhs):
                 match lhs:
                     case ast.Subscript(ast.Name('LET'), var): pass
                     case var: pass
-                add_cmd('LET',
+                add_cmd(lno, 'LET',
                         Arg(0, do_expr(var, ins := []), astop_to_aop(op), ins),
                         Arg(0, do_expr(rhs, ins := []), 0, ins))
             case _: assert False, ast.unparse(stmt)
