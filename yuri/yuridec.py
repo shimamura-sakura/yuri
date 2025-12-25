@@ -45,7 +45,7 @@ def run(
     word_enc: str | None = None,
 ):
     with open(path.join(iroot, 'ysc.ybn'), 'rb') as fp:
-        yscm = YSCM.read(Rdr.from_bio(fp, ienc), v=ver)
+        yscm = YSCM.read(Rdr.from_bio(fp, CP932), v=ver)
     with open(path.join(iroot, 'ysv.ybn'), 'rb') as fp:
         ysvr = YSVR.read(Rdr.from_bio(fp, ienc), v=ver)
     with open(path.join(iroot, 'ysl.ybn'), 'rb') as fp:

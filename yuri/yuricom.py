@@ -146,7 +146,7 @@ def run(
     with open(f'{troot}/yscfg.ybn', 'rb') as fp:
         yscf_bin = fp.read()
     # cdefs, cdict
-    yscm = YSCM.read(Rdr(yscm_bin, t_enc))
+    yscm = YSCM.read(Rdr(yscm_bin, CP932))
     cdefs = {c.name: (i, {a.name: j for j, a in enumerate(c.args)})
              for i, c in enumerate(yscm.cmds)}
     cdict = cdict or {}
