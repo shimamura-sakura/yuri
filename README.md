@@ -10,7 +10,14 @@ Tested on v488 [Natsuzora Asterism](https://www.dlsite.com/maniax/work/=/product
 
 ## Usage and Example
 
-See [v494.py](v494.py)
+See [v494.py](v494.py)  
+Remeber to use multiprocessing.freeze_support() in your main:
+```python
+from multiprocessing import freeze_support
+if __name__ == '__main__':
+   freeze_support()
+   # Your Code Goes Here
+```
 
 ### Running
 
