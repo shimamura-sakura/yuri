@@ -137,7 +137,7 @@ class YSTB:
         # print('cmd', *map(hex, dcmd[0:16]))
         # print('arg', *map(hex, darg[0:16]))
         # print('exp', *map(hex, dexp[0:16]))
-        # print('lno', *map(hex, dlno[0:16]))
+        guess = ','.join(map(hex, dlno[0:16]))
         cyclic_xor_in_place(dcmd, kbs)
         cyclic_xor_in_place(darg, kbs)
         cyclic_xor_in_place(dexp, kbs)
@@ -145,7 +145,11 @@ class YSTB:
         rc = Rdr(dcmd, enc)
         ra = Rdr(darg, enc)
         rl = Rdr(dlno, enc)
-        cmds = [RCmd.readV300(rc, ra, rl, dexp, codes, word_enc) for _ in range(ncmd)]
+        try:
+            cmds = [RCmd.readV300(rc, ra, rl, dexp, codes, word_enc) for _ in range(ncmd)]
+        except Exception as e:
+            e.add_note('lineno guess key: '+guess)
+            raise
         return cls(v, key, cmds, codes)
 
     def print(self, cmds: Seq[MCmd], f: TextIO = stdout, show_idx: bool = True):
