@@ -65,4 +65,8 @@ def do_var(var: ast.expr, typ: Typ) -> tuple[str, Seq[int]]:
 
 
 def do_constexpr(var: ast.expr):
-    return ast.literal_eval(ast.parse(ast.unparse(var), mode='eval', optimize=2).body)
+    try:
+        return ast.literal_eval(ast.parse(ast.unparse(var), mode='eval', optimize=2).body)
+    except Exception as e:
+        e.add_note(ast.unparse(var))
+        raise
