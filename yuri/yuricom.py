@@ -58,7 +58,11 @@ def task_compile(arg: tuple[str, str, tuple[dict[str, Typ], bytes], ComCtx]) -> 
     print('compile', filepath)
     makedirs(path.dirname(workpath), exist_ok=True)
     mod = ast.parse(text, filepath)
-    res = compile_file(c.cdefs, c.cdict, c.gvar_typ, fvars, mod, c.ver, oe_name, c.opts)
+    try:
+        res = compile_file(c.cdefs, c.cdict, c.gvar_typ, fvars, mod, c.ver, oe_name, c.opts)
+    except Exception as e:
+        e.add_note(f'file: {filepath}')
+        raise
     with open(ycompath, 'wb') as fp:
         pickle.dump(res, fp, pickle.HIGHEST_PROTOCOL)
     with open(hashpath, 'wb') as fp:

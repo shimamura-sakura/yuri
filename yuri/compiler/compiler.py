@@ -169,6 +169,12 @@ def compile_file(
                     case (Typ.Flt, _) | (_, Typ.Flt): return Typ.Flt
                     case _: return Typ.Int
             case ast.UnaryOp(op, oper):
+                match expr:
+                    # Boku no Yumemiru Mirai: es_subtask.yst: --9223372036854775808
+                    case ast.UnaryOp(ast.USub(), ast.Constant(int(i))):
+                        into.append(Ins.intv(-i))
+                        return Typ.Int
+                    case _: pass
                 assert (typ := do_expr(oper, into)) != Typ.Str, f'neg str: {ast.unparse(expr)}'
                 match op:
                     case ast.UAdd(): pass
