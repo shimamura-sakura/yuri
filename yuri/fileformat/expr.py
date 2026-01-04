@@ -111,7 +111,7 @@ class Ins:
     def escape_str(s: str):
         segs: list[str] = []
         for i, c in enumerate(s):
-            if c == '\\' and i < len(s)-1:
+            if c == '\\':
                 segs.append('\\\\')
             else:
                 segs.append(c)
