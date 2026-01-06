@@ -97,3 +97,6 @@ patch_text.py in the root folder has two functions: ext_text, pat_text.
 They are used to extract(ext) and edit(pat) text in .yuri files (dialog line only).
 Both their arguments are (.yuri directory, text directory).
 As usual, freeze_support is needed.
+
+gbk.py has a patch_exe(infile, outfile) function, it makes the Yu-Ris exe uses gbk instead of shiftjis.
+modifed from https://github.com/jyxjyx1234/YURIS_TOOLS/blob/main/GBK.py
