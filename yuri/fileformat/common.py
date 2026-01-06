@@ -5,7 +5,7 @@ from sys import stdout  # pyright: ignore[reportUnusedImport]
 from typing import cast, TextIO  # pyright: ignore[reportUnusedImport]
 from dataclasses import dataclass  # pyright: ignore[reportUnusedImport]
 from typing import Literal as Lit, Sequence as Seq, Callable  # pyright: ignore[reportUnusedImport]
-VerRange = range(200, 501)
+VerRange = range(200, 600)
 NErrStr = 37  # for YSCM and YSCD
 VMinUsr = 1000
 LE = 'little'
