@@ -90,3 +90,10 @@ Run `yu-ris.exe`.
 
 This two differences lead to that one cannot compile the code directly if they
 run the decompiler again on the compiled YBN files (need to add `G_/S_/F_` by themselves)
+
+## Other
+
+patch_text.py in the root folder has two functions: ext_text, pat_text.
+They are used to extract(ext) and edit(pat) text in .yuri files (dialog line only).
+Both their arguments are (.yuri directory, text directory).
+As usual, freeze_support is needed.
