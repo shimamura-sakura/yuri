@@ -25,7 +25,12 @@ def task_decompile(arg: tuple[int, str, str, str, DecCtx]):
     print(iscr, scrpath)
     with open(ybnpath, 'rb') as fp:
         try:
-            ystb = YSTB.read(fp, ctx.cmdcodes, enc=ctx.ienc, v=ctx.ver, key=ctx.key, word_enc=ctx.word_enc)
+            ee = None  # dirty
+            # if scrpath.endswith('キャラ名定義_cn.txt'):
+            #     ee = 'gbk'
+            # elif scrpath.endswith('キャラ名定義_tw.txt'):
+            #     ee = 'big5'
+            ystb = YSTB.read(fp, ctx.cmdcodes, enc=ee or ctx.ienc, v=ctx.ver, key=ctx.key, word_enc=ctx.word_enc)
         except Exception as e:
             e.add_note(scrpath)
             raise
@@ -34,6 +39,8 @@ def task_decompile(arg: tuple[int, str, str, str, DecCtx]):
             ystb.print(ctx.cmds, fp)
     text = ctx.ydec.do_ystb(iscr, ystb)
     with open(ctx.opath+ctx.ext, 'w', encoding=ctx.oenc, newline='\r\n') as fp:
+        if ee:
+            fp.write(f'ENC = {repr(ee)}\n')
         fp.write(text)
 
 
