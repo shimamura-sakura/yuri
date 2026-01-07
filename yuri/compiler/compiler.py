@@ -289,9 +289,19 @@ def compile_file(
                     case _: assert False, ast.unparse(stmt)
             case ast.Assign([lhs], rhs):
                 match lhs:
-                    case ast.Name('LBL'):
-                        match rhs:
-                            case ast.Constant(str(lbl)): return add_lbl(lbl)
+                    case ast.Name(lhsname):
+                        match lhsname:
+                            case 'LBL':
+                                match rhs:
+                                    case ast.Constant(str(lbl)): return add_lbl(lbl)
+                                    case _: assert False, ast.unparse(stmt)
+                            case 'ENC':
+                                nonlocal enc
+                                match rhs:
+                                    case ast.Constant(str(rhss)):
+                                        enc = rhss
+                                        return
+                                    case _: assert False, ast.unparse(stmt)
                             case _: assert False, ast.unparse(stmt)
                     case ast.Subscript(ast.Name(cmd), var):
                         if cmd != 'LET':

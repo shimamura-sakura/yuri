@@ -191,7 +191,7 @@ def run(
         gvar_defs.extend(gdefs)
     # parse global_f
     fvar_defs: list[tuple[str, list[TVarDef]]] = []
-    fvars_typ: dict[str, tuple[dict[str, Typ], bytes]] = {}
+    fvars_typ: dict[str, dict[str, Typ]] = {}
     for fdrpath, ffilepath in ffile_list:
         print(ffilepath)
         with open(ffilepath, 'r', encoding=i_enc) as ft:
@@ -201,16 +201,21 @@ def run(
         for t in fdefs:
             assert t[0] not in gvar_typ, f'both in F and G: {t[0]}'
         fvars = {t[0]: t[3] for t in fdefs}
-        hash_fg = sha256(pickle.dumps((gvar_typ, fvars), pickle.HIGHEST_PROTOCOL))
-        fvars_typ[fdrpath] = (fvars, hash_fg.digest())
+        fvars_typ[fdrpath] = fvars
         fvar_defs.append((fdrpath, fdefs))
     # compile sources
-    empty_fvars: dict[str, Typ] = {}
-    empty_hashfg = sha256(pickle.dumps((gvar_typ, empty_fvars), pickle.HIGHEST_PROTOCOL))
-    empty_pair = (empty_fvars, empty_hashfg.digest())
     com_ctx = ComCtx(wroot, iroot, force_recompile, cdefs, cdict, gvar_typ, ver, i_enc, o_enc, opts)
-    com_tasks = [(filepath, dirpath, fvars_typ.get(dirpath, empty_pair), com_ctx)
-                 for dirpath, filepath in source_list]
+    com_tasks: list[tuple[str, str, tuple[dict[str, Typ], bytes], ComCtx]] = []
+    for dirpath, filepath in source_list:
+        dirsegs = dirpath.split(path.sep)
+        filefvs: dict[str, Typ] = {}
+        for i in range(1, len(dirsegs)+1):
+            curlevel = path.sep.join(dirsegs[0:i])
+            if (curfvars := fvars_typ.get(curlevel)) is not None:
+                filefvs.update(curfvars)
+        hashfg = sha256(pickle.dumps((gvar_typ, filefvs), pickle.HIGHEST_PROTOCOL)).digest()
+        p = (filepath, dirpath, (filefvs, hashfg), com_ctx)
+        com_tasks.append(p)
     if mp_parallel:
         with Pool() as pool:
             res_list = pool.map(task_compile, com_tasks)
@@ -219,7 +224,6 @@ def run(
     # assign ivar to global, global_f
     var_list = ysvr.vars
     gvar_dic: dict[str, int] = {}
-    empty_fvardic: dict[str, int] = {}
     fvar_dics: dict[str, dict[str, int]] = {}
     for tvd in gvar_defs:
         match tvd:
@@ -253,7 +257,12 @@ def run(
     link_ctx = LinkCtx(wroot, key)
     link_tasks: list[tuple[int, str, TLinks, TAsmV200 | TAsmV300, LinkCtx]] = []
     for iscr, ((filepath, dirpath, _, _), res) in enumerate(zip(com_tasks, res_list)):
-        fvar_dic = fvar_dics.get(dirpath, empty_fvardic)
+        fvar_dic: dict[str, int] = {}
+        dirsegs = dirpath.split(path.sep)
+        for i in range(1, len(dirsegs)+1):
+            curlevel = path.sep.join(dirsegs[0:i])
+            if (curfvars := fvar_dics.get(curlevel)) is not None:
+                fvar_dic.update(curfvars)
         ntxt, nsvar, nlvar, lbls, syms, asm = res
         relpath = path.relpath(filepath, iroot).removesuffix('.yuri')
         all_scrs.append(Scr(iscr, relpath.replace('/', '\\'), 0, nlvar+nsvar, len(lbls), ntxt))
