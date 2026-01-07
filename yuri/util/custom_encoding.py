@@ -10,18 +10,19 @@ def raise_error(e: Exception):
     raise e
 
 
-def create_mapping(idir: str, oenc: str, ienc: str, ends: Seq[str]):
+def create_mapping(idirs: Seq[str], oenc: str, ienc: str, ends: Seq[str]):
     # map: fail -> good
     chars: set[str] = set()
-    for dirpath, _, filenames in walk(idir, onerror=raise_error):
-        for filename in filenames:
-            for end in ends:
-                if filename.endswith(end):
-                    break
-            else:
-                continue
-            with open(path.join(dirpath, filename), 'r', encoding=ienc) as fp:
-                chars.update(fp.read())
+    for idir in idirs:
+        for dirpath, _, filenames in walk(idir, onerror=raise_error):
+            for filename in filenames:
+                for end in ends:
+                    if filename.endswith(end):
+                        break
+                else:
+                    continue
+                with open(path.join(dirpath, filename), 'r', encoding=ienc) as fp:
+                    chars.update(fp.read())
     # categorize good and bad characters in target encoding
     goods: list[str] = []
     fails: list[int] = []
@@ -57,8 +58,8 @@ class CustomEncoder(NamedTuple):
 
     @classmethod
     def create(cls, iroot: str, o_enc: str, name: str,
-               i_enc: str = 'utf-8', ends: Seq[str] = ('.yuri',)):
-        tlist = create_mapping(iroot, o_enc, i_enc, ends)
+               i_enc: str = 'utf-8', ends: Seq[str] = ('.yuri',), *, extra_idirs: Seq[str] = ()):
+        tlist = create_mapping([iroot, *extra_idirs], o_enc, i_enc, ends)
         trans = list(range(65536))
         for fail, good in tlist:
             trans[fail] = good
