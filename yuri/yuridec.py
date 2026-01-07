@@ -24,7 +24,11 @@ def task_decompile(arg: tuple[int, str, str, str, DecCtx]):
     iscr, scrpath, ybnpath, opath, ctx = arg
     print(iscr, scrpath)
     with open(ybnpath, 'rb') as fp:
-        ystb = YSTB.read(fp, ctx.cmdcodes, enc=ctx.ienc, v=ctx.ver, key=ctx.key, word_enc=ctx.word_enc)
+        try:
+            ystb = YSTB.read(fp, ctx.cmdcodes, enc=ctx.ienc, v=ctx.ver, key=ctx.key, word_enc=ctx.word_enc)
+        except Exception as e:
+            e.add_note(scrpath)
+            raise
     if ctx.dump:
         with open(opath+'.dump', 'w', encoding='utf-8') as fp:
             ystb.print(ctx.cmds, fp)
