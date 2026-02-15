@@ -42,8 +42,9 @@ def create_mapping(idirs: Seq[str], oenc: str, ienc: str, ends: Seq[str]):
                 continue
             if len(fails) == 0:
                 break
-            chr(ich).encode(oenc)
-            failmap.append((fails.pop(), ich))
+            cch = chr(ich)
+            if cch.encode(oenc).decode(oenc) == cch:
+                failmap.append((fails.pop(), ich))
         except UnicodeEncodeError:
             pass
     assert len(fails) == 0, 'unable to map all failed characters'
