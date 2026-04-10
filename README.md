@@ -1,5 +1,7 @@
 # Yuri
 
+[A more detailed readme](yuri.md)
+
 A decompiler and compiler for the Yu-Ris engine, with parallelism.
 
 Tested on v488 [Natsuzora Asterism](https://www.dlsite.com/maniax/work/=/product_id/RJ367965.html) and v494 official example
@@ -8,13 +10,14 @@ Tested on v488 [Natsuzora Asterism](https://www.dlsite.com/maniax/work/=/product
 
 1. Install python version 3.13 (any revision should suffice).
 2. Install the following modules:
-   
+
    > pip install murmurhash2 xor-cipher deflate
 
 ## Usage and Example
 
 See [v494.py](v494.py)  
 Remeber to use multiprocessing.freeze_support() in your main:
+
 ```python
 from multiprocessing import freeze_support
 if __name__ == '__main__':
