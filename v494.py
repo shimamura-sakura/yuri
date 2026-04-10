@@ -16,7 +16,8 @@ if __name__ == '__main__':
     yuridec.run('files/v494', 'example/v494', ver=494, key=0, yscd=yscd)
 
     # decompile into a custom YURI syntax (based on python ast module)
-    yuridec.run('files/v494', 'example/v494', ver=494, key=0, also_dump=True)
+    # dcls parameter is for output syntax; yscd is for variable names, see above for note
+    yuridec.run('files/v494', 'example/v494', ver=494, key=0, also_dump=True, dcls=yuridec.YDecYuri, yscd=yscd)
 
     # compile YURI syntax into YBN then YPF, enable parallelism (default ON)
     # use ycd to enable using original names for system variables
