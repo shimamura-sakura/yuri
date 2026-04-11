@@ -16,7 +16,7 @@ Game used:
 
 ## Fraternite
 
-Full script used: [fraternite.py](fraternite.py)
+Full script: [fraternite.py](fraternite.py)
 
 ### 1. Extract YPF
 
