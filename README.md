@@ -1,7 +1,7 @@
 # Yuri
 
 - [A more detailed readme](yuri.md)
-- [An example - Fraternite and Fraternite HD](guide/fraternite-hd/README.md)
+- [An example - Fraternite and Fraternite HD](guide/fraternite/README.md)
 
 A decompiler and compiler for the Yu-Ris engine, with parallelism.
 
