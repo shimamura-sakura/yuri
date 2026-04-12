@@ -11,6 +11,7 @@ Tested on many versions, including public and commercial.
 
 ## Usage
 
+- [main.py](main.py)
 - [A more detailed readme](yuri.md)
 - [Example - Fraternite and Fraternite HD](guide/fraternite/README.md)
 - [Example - Unionism Quartet](guide/unionism/README.md)
