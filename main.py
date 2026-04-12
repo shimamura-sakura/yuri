@@ -39,20 +39,20 @@ YBN_VER = 554 # Version of the YBN files, which may differ from the ones present
 YPF_OUT = path.join('ypf', 'ysbin-output.ypf') # Path of the resulting YPF file when compiling using the custom YURI syntax
 YSB_OUT_UNOFFICIAL_TEMP = path.join('ybn', 'encoded', 'temp')
 
-## Load official YU-RIS compiler, used for recovering the system variable names
-with open(YCD, 'rb') as ycdobject:
-    yscd = YSCD.read(Rdr.from_bio(ycdobject))
-    cdict = {v.name: (v.typ, i) for i, v in enumerate(yscd.vars)}
+# ## Load official YU-RIS compiler, used for recovering the system variable names
+# with open(YCD, 'rb') as ycdobject:
+#     yscd = YSCD.read(Rdr.from_bio(ycdobject))
+#     cdict = {v.name: (v.typ, i) for i, v in enumerate(yscd.vars)}
 
-# Decompile the given YBN files in YBN_IN to the given YSB_OUT_OFFICIAL path using the official compiler syntax
-yuridec.run(YBN_IN, YSB_OUT_OFFICIAL, 
-            ienc='CP932', oenc='CP932', 
-            yscd=yscd, dcls=yuridec.YDecYuris, mp_parallel=False, also_dump=False, 
-            key=YSTB_KEY, ver=YPF_VER) #If YPF_VER does not work, YBN_VER_ACTUAL will come in place
+# # Decompile the given YBN files in YBN_IN to the given YSB_OUT_OFFICIAL path using the official compiler syntax
+# yuridec.run(YBN_IN, YSB_OUT_OFFICIAL, 
+#             ienc='CP932', oenc='CP932', 
+#             yscd=yscd, dcls=yuridec.YDecYuris, mp_parallel=False, also_dump=False, 
+#             key=YSTB_KEY, ver=YPF_VER) #If YPF_VER does not work, YBN_VER_ACTUAL will come in place
 
 # Decompile the given YBN files in YBN_IN to the given YSB_OUT_UNOFFICIAL path using the custom YURI syntax
 yuridec.run(YBN_IN, YSB_OUT_UNOFFICIAL, 
-            ienc='CP932', oenc='utf-8', 
+            ienc=CP932, oenc='utf-8', 
             dcls=yuridec.YDecYuri, mp_parallel=False, also_dump=True, 
             key=YSTB_KEY, ver=YBN_VER_ACTUAL) #If YPF_VER does not work, YBN_VER_ACTUAL will come in place
 
@@ -65,7 +65,7 @@ yuricom.run(
     troot=YBN_IN,  # For some original ybn files from the game (specifically the ysv, ysc, yse, yscfg ones)
     o_ypf=YPF_OUT,  # Output path of the resulting .ypf file
     i_enc='utf-8', # Encoding of strings in YSTB
-    o_enc='CP932', # encoding in troot files
+    o_enc=CP932, # encoding in troot files
     t_ver=YBN_VER_ACTUAL,  # Here goes the version the game has in the YBN files
     w_ver=YBN_VER,  # While in theory this shouldn't change for the YBN files, some custom games have a different version, and that is indicated in the YPF file (check the header of the original YBN file to know which version is)
     mp_parallel=False,
