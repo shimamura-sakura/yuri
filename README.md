@@ -11,8 +11,9 @@ Tested on many versions, including public and commercial.
 
 ## Usage
 
-- [main.py](main.py)
-- [A more detailed readme](yuri.md)
+There is no exact given path, since each game is different, but everything can be done through the main.py file. It is important to read the technical breakdown of the engine, since it explains some crucial information for the decompilation/compilation process (for example, the process of obtaining the XOR decryption keys for YSTB files).
+
+- [Technical breakdown of the engine](yuri.md)
 
 ### Examples
 - [Fraternite and Fraternite HD](guide/fraternite/README.md)
