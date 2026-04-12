@@ -24,5 +24,5 @@ Tested on many versions, including public and commercial.
 Both their arguments are (.yuri directory, text directory).
 
 - **gbk.py**: this is also intended for translations, specifically Chinese ones. The idea is to patch the main Yu-RIS executable of a game, so that all text in the game is encoded in GBK instead of Shift-JIS.
+Obviously, in order to make the game work properly, the custom compiler needs to be told that the output encoding of the ysbin.ypf file will be in GBK. 
 Modified from: https://github.com/jyxjyx1234/YURIS_TOOLS/blob/main/GBK.py
-Obviously, in order to make the game work properly, the custom compiler needs to be told that the output encoding of the ysbin.ypf file will be in GBK.
