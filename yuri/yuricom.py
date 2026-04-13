@@ -7,10 +7,10 @@ from struct import Struct
 from hashlib import sha256
 from typing import NamedTuple
 from multiprocessing import Pool
-from deflate import zlib_compress
 from os import walk, path, makedirs
 from xor_cipher import cyclic_xor_in_place
 from .util.custom_encoding import CustomEncoder
+from deflate import zlib_compress, zlib_decompress
 __all__ = ['run', 'Typ', 'KEY_200', 'KEY_290']
 YURI_EXT = '.yuri'
 TLinks = list[tuple[list[int], int]]
@@ -129,6 +129,7 @@ def run(
     wroot: str,  # for intermediate files
     troot: str,  # original ysv, ysc, yse, yscfg from your target version
     o_ypf: str,  # output ypf path
+    o_ybn: str | None = None,  # a folder to save generated ybn files
     i_enc: str = 'utf-8',  # source encoding
     t_enc: str = CP932,  # encoding in troot files
     t_ver: int | None = None,  # force version in troot
@@ -322,10 +323,14 @@ def run(
         ypf_make(ypf_ents, ypf_ver or ver, fp, enc=oe_name)
 
         # (Optional step: export the recreated ybn files that will go inside the newly created YPF file)
-        for file_path, file_type, compressed, file_data, uncompressed_length in ypf_ents:
-            print('Created file: ' + file_path)
-            file_path_full = path.join('ybn', 'encoded', *file_path.split('\\'))
-            makedirs(path.dirname(file_path_full), exist_ok=True)
-            # Save the file to the output path
-            with open(file_path_full, 'wb') as created_ypf_object:
-                created_ypf_object.write(file_data)
+        if o_ybn:
+            for name, _, c, data, uncomp_size in ypf_ents:
+                if c == -1:
+                    data = zlib_decompress(data, uncomp_size)
+                    c = 0
+                full_path = path.join(o_ybn, *name.replace('\\', '/').split('/'))
+                makedirs(path.dirname(full_path), exist_ok=True)
+                print(f'save ybn: {full_path}')
+                # Save the file to the output path
+                with open(full_path, 'wb') as fo:
+                    fo.write(data)
