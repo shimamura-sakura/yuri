@@ -1,15 +1,10 @@
-# Example - Unionism Quartet
+# Example - [Unionism Quartet](https://vndb.org/v15288)
 
-Game used:
+## Main parameters
+- Custom build based on version `0.480` (the version the .YBN files are based on, so when decompiling and recompiling those, the program needs to be informed of this value)
+- YPF files: `0.500` (This is seen on any file of the .ypf files)
+- YBN files: `0.554` (This is what the game's executable reports)
+- YSTB decryption key: `0x9C28430C` (This is needed to decrypt the files included in ysbin.ypf. When recreating the ysbin.ypf file, the game accepts a null key.)
 
-- "\[161028\]\[CLIP☆CRAFT\] ユニオリズム・カルテット"
-
-Full script: [unionism.py](unionism.py)
-
-Similar to [Fraternite](../fraternite/README.md), but:
-
-- YPF version 500
-- YBN version 554
-- Force version 480
-- YSTB key `0x9c28430c`
-- Normal `npar` (`opts=yuricom.ComOpts(opt_v555_npar=False)`)
+## Other parameters
+- Standard in *yuricom.run* `npar` (`opts=yuricom.ComOpts(opt_v555_npar=False)`)

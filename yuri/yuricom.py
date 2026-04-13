@@ -320,3 +320,12 @@ def run(
     # write YPF
     with open(o_ypf, 'wb') as fp:
         ypf_make(ypf_ents, ypf_ver or ver, fp, enc=oe_name)
+
+        # (Optional step: export the recreated ybn files that will go inside the newly created YPF file)
+        for file_path, file_type, compressed, file_data, uncompressed_length in ypf_ents:
+            print('Created file: ' + file_path)
+            file_path_full = path.join('ybn', 'encoded', *file_path.split('\\'))
+            makedirs(path.dirname(file_path_full), exist_ok=True)
+            # Save the file to the output path
+            with open(file_path_full, 'wb') as created_ypf_object:
+                created_ypf_object.write(file_data)

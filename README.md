@@ -11,17 +11,19 @@ Tested on many versions, including public and commercial.
 
 ## Usage
 
-- [main.py](main.py)
-- [A more detailed readme](yuri.md)
-- [Example - Fraternite and Fraternite HD](guide/fraternite/README.md)
-- [Example - Unionism Quartet](guide/unionism/README.md)
+There is no exact given path, since each game is different, but everything can be done through the main.py file. It is important to read the technical breakdown of the engine, since it explains some crucial information for the decompilation/compilation process (for example, the process of obtaining the XOR decryption keys for YSTB files).
 
-## Other
+- [Technical breakdown of the engine](yuri.md)
 
-patch_text.py in the root folder has two functions: ext_text, pat_text.
-They are used to extract(ext) and edit(pat) text in .yuri files (dialog line only).
+### Examples
+- [Fraternite and Fraternite HD](guide/fraternite/README.md)
+- [Unionism Quartet](guide/unionism/README.md)
+
+### Miscellanous tools
+
+- **patch_text.py**: this tool is mostly intended to streamline the translation process, since they are used to extract(ext) and edit(pat) text in .yuri files (dialog lines only).
 Both their arguments are (.yuri directory, text directory).
-As usual, freeze_support is needed.
 
-gbk.py has a patch_exe(infile, outfile) function, it makes the Yu-Ris exe uses gbk instead of shiftjis.
-modified from https://github.com/jyxjyx1234/YURIS_TOOLS/blob/main/GBK.py
+- **gbk.py**: this is also intended for translations, specifically Chinese ones. The idea is to patch the main Yu-RIS executable of a game, so that all text in the game is encoded in GBK instead of Shift-JIS.
+Obviously, in order to make the game work properly, the custom compiler needs to be told that the output encoding of the ysbin.ypf file will be in GBK. 
+Modified from: https://github.com/jyxjyx1234/YURIS_TOOLS/blob/main/GBK.py
