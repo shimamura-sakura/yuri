@@ -309,10 +309,11 @@ Example:
 ```
 // in macro.yst
 MACRO[NAME="HELLO" STR="PREP[SERIAL_GNO=2];LABEL[#='lbl.'+$_SERIAL_GNO2]"]
-MACRO[NAME="WORLD" STR="$_M=$_M2"]
+MACRO[NAME="WORLD" STR="$_M=$_M2" DEF2="42"]
 
 \HELLO       // defines a label named "lbl.XXXX" here (XXXX is a number)
 \WORLD($X,Y) // expands to $X=Y
+\WORLD($X,)  // expands to $X=42
 ```
 
 #### System Startup and Project Settings
