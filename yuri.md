@@ -251,14 +251,6 @@ For a full list, please read the
 [official manual](https://yu-ris.net/manual/yu-ris/index.html).  
 It's written in formal Japanese and can be machine translated.
 
-### System Startup and Project Settings
-
-The game starts running at a label named `SYSTEM_START`.
-It's usually in the file `system_start.yst`.
-
-In the project's `data/config/projectconfig.txt`, the user
-sets a few options like window title, window size.
-
 #### Expressions
 
 - Arithmetic
@@ -322,6 +314,14 @@ MACRO[NAME="WORLD" STR="$_M=$_M2"]
 \HELLO       // defines a label named "lbl.XXXX" here (XXXX is a number)
 \WORLD($X,Y) // expands to $X=Y
 ```
+
+#### System Startup and Project Settings
+
+The game starts running at a label named `SYSTEM_START`.
+It's usually in the file `system_start.yst`.
+
+In the project's `data/config/projectconfig.txt`, the user
+sets a few options like window title, window size.
 
 ### The E-ris Library
 
