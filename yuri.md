@@ -1025,7 +1025,7 @@ sz  errmsg[errmsg_count]
 sz  errors[37] // seems to be the same as in YSCM
 u32 some_num
 u32 padding == 0
-u8  unknown[num*num]
+u8  unknown[some_num*some_num]
 u8  unknown[0x800]
 ```
 
