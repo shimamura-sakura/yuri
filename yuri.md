@@ -886,6 +886,8 @@ u8  expressions_section[exprs_size]
 u32 line_numbers[cmd_count]
 ```
 
+**gosub_npar**
+
 In some commercial versions, `gosub_npar` is calculated in another way.
 
 ```python
@@ -909,6 +911,48 @@ def calculate_npar_alternate(argument_list: list[str]):
       n_flt = max(n_flt, int(k) if k.isnumeric() else 1)
   # ff[2]_sssss[5]_iiiiii[6]_fff[3]
   return ((n_flt & 0b11) << 14) + (n_str << 9) + (n_int << 3) + (n_flt >> 2)
+```
+
+**Guessing the XOR key using line numbers**
+
+The first few line numbers are often very small (`<256` or even `<16`),
+so their high bytes are zero. And we know that `0 XOR v == v`.  
+Thus there is high chance that the first few bytes of line number array
+contains the first 3 bytes of the XOR key.
+
+```
+Original : A 0 0 0 B 0 0 0 (little endian integers)
+XOR key  : P Q R S P Q R S (cyclic XOR)
+Encrypted: ? Q R S ? Q R S
+```
+
+One method is that we only enumerate the lowest 1 byte or even only 4
+bits. That's only 256 or 16 cases, very inexpensive to do.  
+For each value, we use it to decrypt the line number array,
+and see whether it's increasing.
+
+```python
+def guess_xor_key(line_numbers: list[int]):
+  assert (line_numbers[0] >> 8) == (line_numbers[1] >> 8)
+  for k in range(256):
+    k += line_numbers[0] >> 8 << 8 # replace the lowest byte of line_numbers[0]
+    try_decrypt = [v ^ k for v in line_numbers]
+    for i in range(1, len(try_decrypt)):
+      if try_decrypt[i-1] > try_decrypt[i]: # not increasing
+        break
+    else: # passed the increasing check
+      # calculated in little endian
+      return k.to_bytes(length=4, byteorder='little')
+```
+
+The other method is that we find the YBN file for
+`data/script/ERIS/es_button.yst`.
+Its first line number is often `9`, and XOR'ing it's first line number with `9`
+is the key.
+
+```python
+def guess_xor_key_es_button(line_numbers: list[int]):
+  return (line_numbers[0] ^ 9).to_bytes(length=4, byteorder='little')
 ```
 
 #### Argument ID and Values
