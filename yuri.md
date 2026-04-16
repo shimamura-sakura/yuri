@@ -781,7 +781,7 @@ Script[scr_count]
   FILETIME modTime    // windows.h FILETIME structure
   i32 var_count       // count of variables defined in this script; see below
   u32 lbl_count       // count of labels defined in this script
-  if version >= 474
+  if version >= 477
     u32 txt_count     // count of `RETURNCODE` commands in this script
 ```
 
