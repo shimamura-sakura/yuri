@@ -754,7 +754,7 @@ Var[var_count]
     case 2:
       f64 value;
     case 3:
-      u8 expr_size;
+      u16 expr_size;
       u8 expr[expr_size]; // An expression whose result is a string, see YSTB.
   }
 ```
