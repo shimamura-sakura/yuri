@@ -16,14 +16,15 @@ There is no exact given path, since each game is different, but everything can b
 - [Technical breakdown of the engine](yuri.md)
 
 ### Examples
+
 - [Fraternite and Fraternite HD](guide/fraternite/README.md)
 - [Unionism Quartet](guide/unionism/README.md)
 
 ### Miscellanous tools
 
 - **patch_text.py**: this tool is mostly intended to streamline the translation process, since they are used to extract(ext) and edit(pat) text in .yuri files (dialog lines only).
-Both their arguments are (.yuri directory, text directory).
+  Both their arguments are (.yuri directory, text directory).
 
 - **gbk.py**: this is also intended for translations, specifically Chinese ones. The idea is to patch the main Yu-RIS executable of a game, so that all text in the game is encoded in GBK instead of Shift-JIS.
-Obviously, in order to make the game work properly, the custom compiler needs to be told that the output encoding of the ysbin.ypf file will be in GBK. 
-Modified from: https://github.com/jyxjyx1234/YURIS_TOOLS/blob/main/GBK.py
+  Obviously, in order to make the game work properly, the custom compiler needs to be told that the output encoding of the ysbin.ypf file will be in GBK.
+  Modified from: https://github.com/jyxjyx1234/YURIS_TOOLS/blob/main/GBK.py
