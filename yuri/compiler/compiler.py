@@ -347,7 +347,7 @@ def compile_file(
     return ntxt, nsvar, nlvar, lblpos, syms, ybnseg
 
 
-AOpIns = [IOpB.NOP, IOpB.ADD, IOpB.SUB, IOpB.MUL, IOpB.DIV, IOpB.MOD, IOpB.BAND, IOpB.BOR, IOpB.BOR]
+AOpIns = [IOpB.NOP, IOpB.ADD, IOpB.SUB, IOpB.MUL, IOpB.DIV, IOpB.MOD, IOpB.BAND, IOpB.BOR, IOpB.BXOR]
 
 
 def astop_to_aop(op: ast.operator) -> int:
