@@ -17,8 +17,8 @@ There is no exact given path, since each game is different, but everything can b
 
 ### Examples
 
-- [Fraternite and Fraternite HD](guide/fraternite/README.md)
-- [Unionism Quartet](guide/unionism/README.md)
+- [Fraternite and Fraternite HD](guides/fraternite.md)
+- [Unionism Quartet](guides/unionism-quartet.md)
 
 ### Miscellanous tools
 

@@ -14,10 +14,10 @@ TCompile = tuple[int, int, int, list[tuple[int, str, int, int]],
 
 @dataclass(slots=True)
 class ComOpts:
-    opt_v555_npar: bool = False  # For: Yuri Love Slave
+    opt_custom_npar: bool = False  # For Yuri Love Slave
 
 
-def v555_npar(kwargs: dict[str, Arg]):
+def custom_npar(kwargs: dict[str, Arg]):
     ni, ns, nf = 0, 0, 0
     for kw in kwargs:
         if 'INT' in kw:
@@ -62,8 +62,8 @@ def compile_file(
             case 'RETURN': npar = len(kwargs)
             case 'GOSUB': npar = len(kwargs)-1
             case _: npar = 0
-        if opts.opt_v555_npar and cmd in ('RETURN', 'GOSUB'):
-            npar = v555_npar(kwargs)
+        if opts.opt_custom_npar and cmd in ('RETURN', 'GOSUB'):
+            npar = custom_npar(kwargs)
         if lno < 0:
             lno = last_lno
         cmds.append(c := Cmd(code, alist, lno, npar))

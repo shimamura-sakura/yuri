@@ -7,4 +7,4 @@
 - YSTB decryption key: `0x9C28430C` (This is needed to decrypt the files included in ysbin.ypf. When recreating the ysbin.ypf file, the game accepts a null key.)
 
 ## Other parameters
-- Standard in *yuricom.run* `npar` (`opts=yuricom.ComOpts(opt_v555_npar=False)`)
+- Custom NPAR: False
