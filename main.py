@@ -70,4 +70,5 @@ yuricom.run(
     w_ver=YBN_VER,  # While in theory this shouldn't change for the YBN files, some custom games have a different version, and that is indicated in the YPF file (check the header of the original YBN file to know which version is)
     mp_parallel=False,
     ypf_ver=YPF_VER,  # Here goes the version the game reports in the YPF file
+    opts=yuricom.ComOpts(opt_custom_npar=False) # Here we indicate if the GOSUB_NPAR is defined differently than the standard SDK does. For more information, check [this file](yuri.md#gosub_npar) for more information.
 )

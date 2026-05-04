@@ -3,11 +3,11 @@
 [Yu-ris](https://yu-ris.net) is a free game engine developed by
 [Firstia](https://firstia.com), mainly used to make visual novels.
 
-In this document, I will describe the engine and its file formats.
+This document is going to give a brief but deep dive into the inner workings of this engine.
 
-## The Engine
+## Main concepts
 
-- The YST Language
+- The YST language
 
 The engine runs its own programming language
 (which I will call by its file extension `YST` as it has no official name),
@@ -16,23 +16,22 @@ In the YST language, besides conventional programming language features like
 variables, expressions, control structures, there are also commands for game
 features: text, image, sound, video, keyboard and mouse input etc.
 
-- The E-ris Library
+- The E-ris library
 
 Using the YST language, the Yu-ris author developed a library called `E-ris` for
 making visual novels. Visual novel makers writes scenario text and uses macros
 offered by E-ris for choices, screen effects etc. And E-ris does the rest:
 drawing the screen, handle save/load, backlog, settings screen etc.
 
-- Special Versions
+- Special versions
 
 The Yu-ris author have created some custom versions for commercial games.
 Also, some fan-translation teams had made changes to the engine in the process
-of translation. These versions differ from the public versions in many points:
-file format, features, text encoding etc.
+of translation.
 
-### The YST Language
+### The YST language
 
-This part describes the syntax and semantics of the YST Language.
+This part describes the syntax and semantics of the YST language.
 
 #### Syntax
 
@@ -797,7 +796,7 @@ A negative `var_count` means there is no YBN file corresponding to it. Reasons:
 There are two main versions of YSTB:
 
 - Old version (`< 300`): commands and their arguments are in one section
-- New version (`>=300`): commands and arguments are splitted into two arrays
+- New version (`>= 300`): commands and arguments are splitted into two arrays
 
 They both have an expressions section to store argument values of commands.
 
@@ -832,7 +831,7 @@ YSTB file is like this
 
 And en/decryption is called on each section.
 
-#### Old Format
+#### Old format
 
 ```
 u8  magic[4] == 'YSTB'
@@ -860,7 +859,7 @@ OldCommand[] // read until all command_section is consumed
       u32 expr_offset
 ```
 
-#### New Format
+#### New format
 
 ```
 u8  magic[4] == 'YSTB'
@@ -886,7 +885,7 @@ u8  expressions_section[exprs_size]
 u32 line_numbers[cmd_count]
 ```
 
-**gosub_npar**
+##### **gosub_npar**
 
 In some commercial versions, `gosub_npar` is calculated in another way.
 
@@ -912,6 +911,22 @@ def calculate_npar_alternate(argument_list: list[str]):
   # ff[2]_sssss[5]_iiiiii[6]_fff[3]
   return ((n_flt & 0b11) << 14) + (n_str << 9) + (n_int << 3) + (n_flt >> 2)
 ```
+
+**How to know if a game uses a custom NPAR**
+
+Go to the folder with the decompiled script and find a `GOSUB` in the dump files.  
+For example, `data/script/eris/es_button.yst.dump`:
+
+```
+[215] off=860 lno=318 npar=16 44:GOSUB
+- [0] # RArg(id=0, typ=<Typ.Str: 3>, aop=<AOp.EQL: 0>, siz=22, off=5057, dat=['"es.BT.GROUP.CHECK"'])
+- [1] PINT RArg(id=1, typ=<Typ.Int: 1>, aop=<AOp.EQL: 0>, siz=6, off=5079, dat=[(<IOpV.VAR: 840>, <Tyq.NUM: 64>, 1413)])
+- [2] PINT2 RArg(id=2, typ=<Typ.Int: 1>, aop=<AOp.EQL: 0>, siz=6, off=5085, dat=[(<IOpV.VAR: 840>, <Tyq.NUM: 64>, 1412)])
+```
+
+We see `npar=16`, but there are only two arguments `PINT`, `PINT2`.  
+This means the game uses a special scheme for the `npar` field.
+
 
 **Guessing the XOR key using line numbers**
 
