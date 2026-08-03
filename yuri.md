@@ -974,10 +974,10 @@ Another method, which can prove to be faster, it is if you happen to get the mes
 
 ```python
 AssertionError
-lineno guess key: 0x3e,0xdf,0xa8,0x95,0x3d,0xdf,0xa8,0x95,0x3c,0xdf,0xa8,0x95,0x3b,0xdf,0xa8,0x95
+lineno guess key: 0x85,0x98,0x4f,0x1b,0x3d,0xdf,0xa8,0x95,0x3c,0xdf,0xa8,0x95,0x3b,0xdf,0xa8,0x95
 data\script\eris\es_button.yst
 ```
-If that is the case, the first thing to do is getting the first 4 bytes of the array, resulting in the value of **0x85984F1B**. So, **the idea would be to change the byte *5* in 0x85 to any number in between 0 and 4** (since it is 5 in this case) and try out all of the possible combinations. In this case, the possible keys to try out would be 0x8**4**984F1B, 0x8**3**984F1B, 0x8**2**984F1B, 0x8**1**984F1B, 0x8**0**984F1B.
+If that is the case, the first thing to do is getting the first 4 bytes of the array (*lineno guess key*), resulting in the value of **0x85984F1B**. So, **the idea would be to change the byte *5* in 0x85 to any number in between 0 and 4** (since it is 5 in this case) and try out all of the possible combinations. In this case, the possible keys to try out would be 0x8**4**984F1B, 0x8**3**984F1B, 0x8**2**984F1B, 0x8**1**984F1B, 0x8**0**984F1B.
 
 #### Argument ID and Values
 
